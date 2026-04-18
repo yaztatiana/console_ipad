@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="theme-color" content="#252818" />
+    <title>Maison du manifeste — orders</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Italiana&family=Marcellus&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body class="theme-artnouveau">
+    <div class="bg-art" aria-hidden="true"></div>
+    <div class="nouveau-bloom" aria-hidden="true"></div>
+    <div class="nouveau-vine" aria-hidden="true"></div>
+    <div class="ornate-frame" aria-hidden="true"></div>
+    <div class="paper-grain" aria-hidden="true"></div>
+    <div class="vignette" aria-hidden="true"></div>
+
+    <main class="console" id="console">
+      <div class="console__crest" aria-hidden="true"></div>
+
+      <div class="ironwork-banner" aria-hidden="true">
+        <div class="ironwork-banner__glass"></div>
+        <img
+          class="ironwork-banner__svg"
+          src="/static/ironwork-banner.svg"
+          width="1200"
+          height="168"
+          alt=""
+          decoding="async"
+          fetchpriority="high"
+        />
+      </div>
+
+      <header class="console__header">
+        <div class="console__title">
+          <span class="blink" aria-hidden="true">❧</span>
+          <span class="console__title-text">Maison du manifeste</span>
+          <span class="console__subtitle">Atelier des commandes — commerce &amp; curiosités</span>
+        </div>
+        <div class="console__meta">
+          <span id="clock">--:--:--</span>
+          <span class="sep">·</span>
+          <span id="link-state">Fil: veille</span>
+        </div>
+      </header>
+
+      <section class="console__panel console__panel--hero" aria-label="Illustration">
+        <div class="hero-strip">
+          <img
+            class="hero-strip__img"
+            src="/static/theme-hero.png"
+            width="1200"
+            height="675"
+            alt=""
+            decoding="async"
+            fetchpriority="high"
+          />
+          <p class="hero-strip__caption mono">
+            Gravure d’ombre — cadre fleuri autour d’un conte qui refuse de vieillir.
+          </p>
+        </div>
+      </section>
+
+      <section class="console__panel" aria-label="System messages">
+        <div class="panel__label">Journal du système</div>
+        <pre class="panel__body mono" id="sys-log">
+&gt; L’atelier s’éveille…
+&gt; En attente du fil de soie vers la base…
+        </pre>
+      </section>
+
+      <section class="console__panel console__panel--wide" aria-label="Orders">
+        <div class="panel__label">Registre des commandes</div>
+        <div class="table-wrap">
+          <table class="manifest mono" id="manifest">
+            <thead id="manifest-head"></thead>
+            <tbody id="manifest-body"></tbody>
+          </table>
+        </div>
+        <div class="panel__footer mono" id="manifest-foot"></div>
+      </section>
+
+      <footer class="console__footer mono">
+        <span>Sceau: <span id="session-ref">--------</span></span>
+        <span class="right">Lecture seule — n’effacez pas l’orchidée</span>
+      </footer>
+    </main>
+
+    <script src="/static/app.js" defer></script>
+  </body>
+</html>

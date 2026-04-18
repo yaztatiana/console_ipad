@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0b0d12" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <title>Home console — Manage</title>
+    <link rel="manifest" href="./manifest.json" />
+    <link rel="stylesheet" href="./manage.css" />
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="top">
+        <div>
+          <h1>Household manage</h1>
+          <p class="sub">
+            Calendar, chores, meals — stored in this browser until you connect AWS data APIs.
+          </p>
+        </div>
+        <div class="actions">
+          <a href="../tv/"><button type="button">Open TV view</button></a>
+          <button type="button" class="primary" id="btn-export">Export JSON</button>
+          <label class="filebtn"
+            >Import JSON
+            <input id="file-import" type="file" accept="application/json,.json" />
+          </label>
+        </div>
+      </header>
+
+      <div class="grid">
+        <section class="card">
+          <h2>Household</h2>
+          <div class="row">
+            <label for="house-name">Name</label>
+            <input id="house-name" type="text" class="small" autocomplete="organization" />
+            <button type="button" class="primary" id="btn-save-house">Save</button>
+          </div>
+          <p class="muted">
+            Tip: export after edits, import on the Fire TV Silk tab (same site) to sync without a
+            server — or add Amplify Data / AppSync next.
+          </p>
+        </section>
+
+        <section class="card">
+          <h2>People</h2>
+          <div class="row">
+            <input id="member-name" type="text" placeholder="Name" />
+            <input id="member-color" type="color" value="#5b8def" aria-label="Color" />
+            <button type="button" class="primary" id="btn-add-member">Add</button>
+          </div>
+          <ul class="list" id="member-list"></ul>
+        </section>
+
+        <section class="card grid-2" style="grid-column: 1 / -1">
+          <div>
+            <h2>Calendar events</h2>
+            <div class="row" style="flex-direction: column; align-items: stretch">
+              <label for="ev-title">Title</label>
+              <input id="ev-title" type="text" placeholder="School pickup" />
+              <label for="ev-start" style="margin-top: 0.35rem">Starts</label>
+              <input id="ev-start" type="datetime-local" />
+              <label for="ev-end" style="margin-top: 0.35rem">Ends (optional)</label>
+              <input id="ev-end" type="datetime-local" />
+              <div style="margin-top: 0.5rem" class="muted">Who is involved?</div>
+              <div id="ev-members" class="row" style="margin-top: 0.35rem"></div>
+              <button type="button" class="primary" id="btn-add-event" style="margin-top: 0.65rem">
+                Add event
+              </button>
+            </div>
+          </div>
+          <div>
+            <h2>Upcoming</h2>
+            <ul class="list" id="event-list"></ul>
+          </div>
+        </section>
+
+        <section class="card grid-2" style="grid-column: 1 / -1">
+          <div>
+            <h2>Chores</h2>
+            <div class="row" style="flex-direction: column; align-items: stretch">
+              <label for="ch-title">Title</label>
+              <input id="ch-title" type="text" placeholder="Vacuum living room" />
+              <label for="ch-assign" style="margin-top: 0.35rem">Assign</label>
+              <select id="ch-assign"></select>
+              <label for="ch-day" style="margin-top: 0.35rem">Due weekday</label>
+              <select id="ch-day">
+                <option value="">Any</option>
+                <option value="0">Sunday</option>
+                <option value="1">Monday</option>
+                <option value="2">Tuesday</option>
+                <option value="3">Wednesday</option>
+                <option value="4">Thursday</option>
+                <option value="5">Friday</option>
+                <option value="6">Saturday</option>
+              </select>
+              <button type="button" class="primary" id="btn-add-chore" style="margin-top: 0.65rem">
+                Add chore
+              </button>
+            </div>
+          </div>
+          <div>
+            <h2>Board</h2>
+            <ul class="list" id="chore-list"></ul>
+          </div>
+        </section>
+
+        <section class="card" style="grid-column: 1 / -1">
+          <h2>Meal plan (this week)</h2>
+          <p class="muted">Monday-start week, same as the TV board.</p>
+          <div id="meal-week" class="week-editor"></div>
+          <button type="button" class="primary" id="btn-save-meals" style="margin-top: 0.85rem">
+            Save meals
+          </button>
+        </section>
+      </div>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="../shared/calendar.js"></script>
+    <script src="../shared/store.js"></script>
+    <script src="./manage.js"></script>
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", function () {
+          navigator.serviceWorker.register("./sw.js", { scope: "./" }).catch(function () {});
+        });
+      }
+    </script>
+  </body>
+</html>

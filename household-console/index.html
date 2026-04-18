@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0b0d12" />
+    <title>Home console</title>
+    <style>
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        background: radial-gradient(120% 90% at 50% 0%, #151a2a, #0b0d12);
+        color: #eef2ff;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        padding: 2rem 1.25rem;
+      }
+      .box {
+        width: min(720px, 100%);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 16px;
+        padding: 1.5rem 1.25rem;
+        background: rgba(18, 23, 34, 0.85);
+      }
+      h1 {
+        margin: 0 0 0.5rem;
+        font-size: 1.5rem;
+      }
+      p {
+        margin: 0 0 1rem;
+        color: #9aa4bf;
+        line-height: 1.55;
+      }
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.65rem;
+      }
+      a {
+        display: inline-block;
+        padding: 0.75rem 1rem;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        color: #eef2ff;
+        text-decoration: none;
+        background: rgba(255, 255, 255, 0.06);
+      }
+      a.primary {
+        border-color: rgba(124, 92, 255, 0.55);
+        background: rgba(124, 92, 255, 0.22);
+      }
+      code {
+        font-size: 0.92em;
+        color: #c9d4ff;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="box">
+      <h1>Home console</h1>
+      <p>
+        Fire TV and tablets share the same static site on Amplify. TV view is large-type and
+        rotates when idle; Manage is the household editor (install as a PWA from Safari on iPad).
+      </p>
+      <div class="row">
+        <a class="primary" href="./tv/">TV dashboard</a>
+        <a href="./manage/">Manage (PWA)</a>
+      </div>
+      <p style="margin-top: 1.25rem; margin-bottom: 0; font-size: 0.95rem">
+        Fire TV: open <code>/tv/</code> in Silk, or sideload with Amazon Web App Tester / publish a
+        private HTML5 web app in the Amazon developer console. Data today lives in
+        <code>localStorage</code>; use Export/Import on each device until you add Cognito + API.
+      </p>
+    </div>
+  </body>
+</html>
