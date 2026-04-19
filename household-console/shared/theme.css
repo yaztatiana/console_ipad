@@ -1,0 +1,10 @@
+/*
+  Theme library entry: imports fonts + all palettes.
+  Active theme = html[data-theme="…"] set by shared/themes.js (localStorage: household-ui-theme).
+
+  Add a theme: new file in ./themes/ + register id in themes.js
+*/
+@import url("./themes/fonts.css");
+@import url("./themes/sailor-day.css");
+@import url("./themes/academia-night.css");
+@import url("./themes/vegas-street.css");

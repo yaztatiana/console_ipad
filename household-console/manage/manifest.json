@@ -1,12 +1,12 @@
 {
   "name": "Home Console — Manage",
   "short_name": "Manage",
-  "description": "Household calendar, chores, and meals",
+  "description": "Household calendar, chores, shopping, and dinner",
   "start_url": "/manage/",
   "scope": "/manage/",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#0b0d12",
-  "theme_color": "#0b0d12",
+  "background_color": "#0e1018",
+  "theme_color": "#0e1018",
   "icons": []
 }

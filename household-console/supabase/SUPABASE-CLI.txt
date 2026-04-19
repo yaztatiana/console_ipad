@@ -1,0 +1,8 @@
+Migrations live at repo root: supabase/migrations/
+
+From the console_ipad folder:
+  supabase link --project-ref YOUR_PROJECT_REF
+  supabase db push
+
+New migration:
+  supabase migration new your_change_name

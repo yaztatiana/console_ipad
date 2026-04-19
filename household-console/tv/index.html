@@ -6,35 +6,65 @@
       name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
-    <meta name="theme-color" content="#0c0f14" />
+    <meta name="theme-color" content="#0e1018" />
     <title>Home console — TV</title>
+    <script src="../shared/themes.js"></script>
     <link rel="stylesheet" href="./tv.css" />
   </head>
   <body class="tv-tenfoot">
+    <div class="graffiti-rail graffiti-rail--top" aria-hidden="true">
+      <div class="graffiti-rail__inner">
+        <span class="graffiti-burst">LIVE</span>
+        <span class="graffiti-burst graffiti-burst--cyan">24/7</span>
+        <span class="graffiti-burst graffiti-burst--lime">CTRL</span>
+        <span class="graffiti-burst graffiti-burst--pink">HOME</span>
+        <span class="graffiti-burst graffiti-burst--gold">VIVA</span>
+      </div>
+    </div>
     <div class="shell">
+      <div class="sailor-sky sailor-sky--tv" aria-hidden="true">
+        <span class="sailor-moon" aria-hidden="true">🌙</span>
+        <span class="sailor-moon sailor-moon--echo" aria-hidden="true">🌕</span>
+        <span class="sailor-star" aria-hidden="true">✦</span>
+        <span class="sailor-star" aria-hidden="true">★</span>
+        <span class="sailor-star" aria-hidden="true">✧</span>
+        <span class="sailor-star" aria-hidden="true">✦</span>
+        <span class="sailor-star" aria-hidden="true">⋆</span>
+        <span class="sailor-star" aria-hidden="true">★</span>
+        <span class="sailor-star" aria-hidden="true">✦</span>
+        <span class="sailor-star" aria-hidden="true">✧</span>
+        <span class="sailor-star" aria-hidden="true">★</span>
+        <span class="sailor-star" aria-hidden="true">✦</span>
+        <span class="sailor-star" aria-hidden="true">⋆</span>
+        <span class="sailor-star" aria-hidden="true">✧</span>
+        <span class="sailor-star" aria-hidden="true">★</span>
+        <span class="sailor-star" aria-hidden="true">✦</span>
+        <span class="sailor-star" aria-hidden="true">✧</span>
+        <span class="sailor-star" aria-hidden="true">★</span>
+        <span class="sailor-star" aria-hidden="true">✦</span>
+      </div>
       <header class="tv-header">
         <div>
           <div class="tv-title" id="houseName">Home</div>
-          <div class="tv-sub">Household dashboard · idle rotation</div>
         </div>
         <div class="tv-clock" id="clock"></div>
       </header>
 
       <section class="tv-stage" aria-roledescription="carousel" aria-label="Home slides">
+        <div class="slide is-active" id="slide-today" tabindex="0" role="tabpanel" aria-label="Today">
+          <div class="slide__inner slide__inner--today"></div>
+        </div>
+        <div class="slide" id="slide-calendar" tabindex="0" role="tabpanel" aria-label="Calendar">
+          <div class="slide__inner"></div>
+        </div>
         <div
-          class="slide is-active"
-          id="slide-calendar"
+          class="slide"
+          id="slide-chores-dinner"
           tabindex="0"
           role="tabpanel"
-          aria-label="Calendar"
+          aria-label="Chores and dinner"
         >
-          <div class="slide__inner"></div>
-        </div>
-        <div class="slide" id="slide-chores" tabindex="0" role="tabpanel" aria-label="Chores">
-          <div class="slide__inner"></div>
-        </div>
-        <div class="slide" id="slide-meals" tabindex="0" role="tabpanel" aria-label="Meals">
-          <div class="slide__inner"></div>
+          <div class="slide__inner slide__inner--split"></div>
         </div>
       </section>
 
@@ -44,12 +74,22 @@
           <span class="dot"></span>
           <span class="dot"></span>
         </div>
-        <div class="hint">◀ ▶ remote · opens in Silk or Web App Tester</div>
+        <div class="hint" id="sync-hint">◀ ▶ remote · local data unless cloud sync is on</div>
       </footer>
+    </div>
+    <div class="graffiti-rail graffiti-rail--bottom" aria-hidden="true">
+      <div class="graffiti-rail__inner graffiti-rail__inner--flip">
+        <span class="graffiti-burst graffiti-burst--pink">SILK</span>
+        <span class="graffiti-burst graffiti-burst--cyan">STREAM</span>
+        <span class="graffiti-burst">WALL</span>
+        <span class="graffiti-burst graffiti-burst--lime">UP</span>
+        <span class="graffiti-burst graffiti-burst--gold">LAS VEGAS</span>
+      </div>
     </div>
 
     <script src="../shared/calendar.js"></script>
     <script src="../shared/store.js"></script>
+    <script src="../shared/sync.js"></script>
     <script src="./tv.js"></script>
   </body>
 </html>

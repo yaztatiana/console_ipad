@@ -1,0 +1,40 @@
+Each theme file targets:  html[data-theme="THEME_ID"] { ... }
+
+Required custom properties (TV + Manage read these):
+
+  Fonts
+    --font-display   --font-sans   --font-mono
+
+  Surfaces
+    --ink            page / base background
+    --void           second stop in TV base gradient
+    --surface        glass cards (rgba)
+    --surface-2      footer / secondary panels
+    --text           primary text
+    --muted          secondary text
+    --line           borders (rgba)
+
+  Accents (chips, dots, buttons may mix these)
+    --coral  --amber  --mint  --violet  --sky
+    --accent  --accent-2  --danger  --ok
+
+  Shape / depth
+    --radius-lg  --radius-md
+    --shadow-deep  --shadow-glow
+
+  Atmosphere (TV body::before / mesh)
+    --tv-mesh-1  --tv-mesh-2  --tv-mesh-3   (rgba, large orbs)
+    --tv-base-a  --tv-base-b  --tv-base-c   (gradient stops, hex/rgba)
+
+  Manage page mesh (body::before)
+    --manage-mesh-1  --manage-mesh-2  --manage-mesh-3
+
+  Optional tuning
+    --noise-opacity     0–1 (TV grain overlay)
+    --clock-color       clock numerals
+    --clock-glow        text-shadow color (rgba)
+
+To add a new theme:
+  1. Copy one of the existing files in this folder.
+  2. Change the selector to html[data-theme="your-id"] { ... }
+  3. Register the id in ../themes.js (VALID object + list in UI if you add a picker option).

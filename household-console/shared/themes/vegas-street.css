@@ -1,0 +1,174 @@
+/* Las Vegas street — sharp neon, wet asphalt, sticker slap */
+html[data-theme="vegas-street"] {
+  --font-display: "Bebas Neue", Impact, sans-serif;
+  --font-sans: "Rubik", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  --ink: #06060a;
+  --void: #0e0c14;
+  --surface: rgba(18, 14, 28, 0.88);
+  --surface-2: rgba(10, 8, 16, 0.94);
+  --text: #faf8ff;
+  --muted: #a89fd4;
+  --line: rgba(0, 255, 247, 0.5);
+
+  --coral: #ff1a8c;
+  --amber: #fff200;
+  --mint: #00ffcc;
+  --violet: #d94dff;
+  --sky: #00f5ff;
+
+  --accent: #ff1a8c;
+  --accent-2: #00f5ff;
+  --danger: #ff3355;
+  --ok: #00ffcc;
+
+  --radius-lg: 4px;
+  --radius-md: 2px;
+  --shadow-deep: 0 24px 64px rgba(0, 0, 0, 0.85), 0 0 1px rgba(0, 255, 247, 0.15);
+  --shadow-glow:
+    0 0 28px rgba(255, 26, 140, 0.65),
+    0 0 56px rgba(0, 245, 255, 0.35),
+    0 0 100px rgba(255, 242, 0, 0.12);
+
+  --tv-mesh-1: rgba(255, 30, 140, 0.28);
+  --tv-mesh-2: rgba(0, 245, 255, 0.22);
+  --tv-mesh-3: rgba(255, 250, 0, 0.14);
+  --tv-base-a: #120f18;
+  --tv-base-b: #08060e;
+  --tv-base-c: #1a0a22;
+
+  --manage-mesh-1: rgba(255, 26, 140, 0.22);
+  --manage-mesh-2: rgba(0, 230, 255, 0.18);
+  --manage-fade-top: #140818;
+
+  --noise-opacity: 0.05;
+  --clock-color: #00fff2;
+  --clock-glow: rgba(0, 255, 247, 0.65);
+
+  --graffiti-rail-h: clamp(2.65rem, 5.5vw, 3.35rem);
+}
+
+/* Graffiti banner rails — TV + Manage (markup always present; hidden off-Vegas) */
+.graffiti-rail {
+  display: none;
+}
+
+html[data-theme="vegas-street"] .graffiti-rail {
+  display: block;
+  position: fixed;
+  left: 0;
+  right: 0;
+  z-index: 5;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+html[data-theme="vegas-street"] .graffiti-rail--top {
+  top: 0;
+  border-bottom: 3px solid #ff1a8c;
+  box-shadow:
+    0 8px 28px rgba(0, 0, 0, 0.55),
+    0 0 24px rgba(255, 26, 140, 0.35);
+}
+
+html[data-theme="vegas-street"] .graffiti-rail--bottom {
+  bottom: 0;
+  border-top: 3px solid #00f5ff;
+  box-shadow:
+    0 -10px 32px rgba(0, 0, 0, 0.55),
+    0 0 26px rgba(0, 245, 255, 0.28);
+}
+
+html[data-theme="vegas-street"] .graffiti-rail__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.45rem, 2vw, 1.35rem);
+  min-height: var(--graffiti-rail-h);
+  padding: 0.35rem 0.75rem;
+  background:
+    linear-gradient(180deg, rgba(40, 32, 58, 0.97) 0%, rgba(12, 10, 20, 0.98) 100%),
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.03) 0 2px,
+      transparent 2px 14px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent 0 10px,
+      rgba(0, 0, 0, 0.18) 10px 11px
+    );
+}
+
+html[data-theme="vegas-street"] .graffiti-rail__inner--flip {
+  flex-direction: row-reverse;
+}
+
+html[data-theme="vegas-street"] .graffiti-burst {
+  position: relative;
+  font-family: var(--font-display);
+  font-size: clamp(1rem, 2.6vw, 1.75rem);
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #fff200;
+  transform: rotate(-2.5deg) skewX(-4deg);
+  text-shadow:
+    3px 3px 0 #0a0610,
+    -2px 2px 0 rgba(255, 26, 140, 0.55),
+    0 0 20px rgba(255, 242, 0, 0.45),
+    0 0 42px rgba(255, 26, 140, 0.25);
+  filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.85));
+}
+
+html[data-theme="vegas-street"] .graffiti-burst:nth-child(odd) {
+  transform: rotate(2deg) skewX(3deg);
+}
+
+html[data-theme="vegas-street"] .graffiti-burst--cyan {
+  color: #00fff2;
+  text-shadow:
+    3px 3px 0 #0a0610,
+    2px -2px 0 rgba(0, 245, 255, 0.5),
+    0 0 22px rgba(0, 245, 255, 0.5);
+}
+
+html[data-theme="vegas-street"] .graffiti-burst--lime {
+  color: #7fff00;
+  text-shadow:
+    3px 3px 0 #0a0610,
+    -2px -1px 0 rgba(127, 255, 0, 0.45),
+    0 0 18px rgba(0, 255, 200, 0.35);
+}
+
+html[data-theme="vegas-street"] .graffiti-burst--pink {
+  color: #ff1a8c;
+  text-shadow:
+    3px 3px 0 #0a0610,
+    1px 2px 0 rgba(255, 26, 140, 0.65),
+    0 0 26px rgba(255, 26, 140, 0.55);
+}
+
+html[data-theme="vegas-street"] .graffiti-burst--gold {
+  color: #ffd54a;
+  text-shadow:
+    3px 3px 0 #0a0610,
+    0 0 20px rgba(255, 213, 74, 0.55);
+}
+
+/* Keep main content clear of fixed rails */
+html[data-theme="vegas-street"] body.tv-tenfoot {
+  padding-top: var(--graffiti-rail-h);
+  padding-bottom: var(--graffiti-rail-h);
+}
+
+html[data-theme="vegas-street"] body:not(.tv-tenfoot) {
+  padding-top: var(--graffiti-rail-h);
+  padding-bottom: var(--graffiti-rail-h);
+}
+
+html[data-theme="vegas-street"] body:not(.tv-tenfoot) .wrap {
+  padding-top: calc(0.85rem + env(safe-area-inset-top));
+}

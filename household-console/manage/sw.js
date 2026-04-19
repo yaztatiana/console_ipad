@@ -1,22 +1,49 @@
+var MANAGE_CACHE = "home-console-manage-v5";
+
 self.addEventListener("install", function (event) {
   self.skipWaiting();
   event.waitUntil(
-    caches.open("home-console-manage-v1").then(function (cache) {
+    caches.open(MANAGE_CACHE).then(function (cache) {
       var base = new URL(".", self.location.href).href;
       return cache.addAll([
         new URL("./index.html", base).href,
         new URL("./manage.css", base).href,
         new URL("./manage.js", base).href,
         new URL("./manifest.json", base).href,
+        new URL("../shared/theme.css", base).href,
+        new URL("../shared/themes.js", base).href,
+        new URL("../shared/themes/fonts.css", base).href,
+        new URL("../shared/themes/sailor-day.css", base).href,
+        new URL("../shared/themes/academia-night.css", base).href,
+        new URL("../shared/themes/vegas-street.css", base).href,
+        new URL("../shared/themes/sailor-sky.css", base).href,
         new URL("../shared/store.js", base).href,
         new URL("../shared/calendar.js", base).href,
+        new URL("../shared/sync.js", base).href,
       ]);
     })
   );
 });
 
 self.addEventListener("activate", function (event) {
-  event.waitUntil(self.clients.claim());
+  event.waitUntil(
+    caches
+      .keys()
+      .then(function (keys) {
+        return Promise.all(
+          keys
+            .filter(function (k) {
+              return k !== MANAGE_CACHE;
+            })
+            .map(function (k) {
+              return caches.delete(k);
+            })
+        );
+      })
+      .then(function () {
+        return self.clients.claim();
+      })
+  );
 });
 
 self.addEventListener("fetch", function (event) {

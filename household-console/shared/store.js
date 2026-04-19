@@ -2,6 +2,7 @@
   "use strict";
 
   var STORAGE_KEY = "household-console-v1";
+  var THEME_IDS = { "sailor-day": 1, "academia-night": 1, "vegas-street": 1 };
 
   function uid() {
     if (global.crypto && global.crypto.randomUUID) return global.crypto.randomUUID();
@@ -27,23 +28,75 @@
         },
       ],
       meals: {},
+      shoppingColumns: [[], []],
+      weatherLocation: { lat: 40.7128, lon: -74.006 },
+      uiTheme: "sailor-day",
     };
+  }
+
+  function normalizeHouseholdData(data) {
+    if (!data || typeof data !== "object") return data;
+    if (!Array.isArray(data.shoppingColumns)) data.shoppingColumns = [[], []];
+    while (data.shoppingColumns.length < 2) data.shoppingColumns.push([]);
+    data.shoppingColumns = data.shoppingColumns.slice(0, 2).map(function (col) {
+      if (!Array.isArray(col)) return [];
+      return col.map(function (it) {
+        if (!it || typeof it !== "object") return { id: uid(), text: "", checked: false };
+        return {
+          id: it.id || uid(),
+          text: String(it.text || ""),
+          checked: !!it.checked,
+        };
+      });
+    });
+    if (!data.weatherLocation || typeof data.weatherLocation !== "object") {
+      data.weatherLocation = { lat: 40.7128, lon: -74.006 };
+    }
+    var lat = Number(data.weatherLocation.lat);
+    var lon = Number(data.weatherLocation.lon);
+    if (!Number.isFinite(lat)) lat = 40.7128;
+    if (!Number.isFinite(lon)) lon = -74.006;
+    data.weatherLocation = { lat: lat, lon: lon };
+
+    if (!data.uiTheme || !THEME_IDS[data.uiTheme]) {
+      var fromLs = "";
+      try {
+        fromLs = global.localStorage.getItem("household-ui-theme") || "";
+      } catch (e) {}
+      data.uiTheme = THEME_IDS[fromLs] ? fromLs : "sailor-day";
+    }
+
+    if (!data.meals || typeof data.meals !== "object") data.meals = {};
+    Object.keys(data.meals).forEach(function (iso) {
+      var m = data.meals[iso];
+      if (!m || typeof m !== "object") {
+        delete data.meals[iso];
+        return;
+      }
+      var merged =
+        String(m.dinner || "").trim() ||
+        String(m.lunch || "").trim() ||
+        String(m.breakfast || "").trim() ||
+        "";
+      if (merged) data.meals[iso] = { dinner: merged };
+      else delete data.meals[iso];
+    });
+    return data;
   }
 
   function load() {
     try {
       var raw = global.localStorage.getItem(STORAGE_KEY);
-      if (!raw) return defaultData();
+      if (!raw) return normalizeHouseholdData(defaultData());
       var data = JSON.parse(raw);
-      if (!data || typeof data !== "object") return defaultData();
+      if (!data || typeof data !== "object") return normalizeHouseholdData(defaultData());
       if (!Array.isArray(data.members)) data.members = defaultData().members;
       if (!Array.isArray(data.events)) data.events = [];
       if (!Array.isArray(data.chores)) data.chores = [];
-      if (!data.meals || typeof data.meals !== "object") data.meals = {};
       if (!data.householdName) data.householdName = "Home";
-      return data;
+      return normalizeHouseholdData(data);
     } catch (e) {
-      return defaultData();
+      return normalizeHouseholdData(defaultData());
     }
   }
 
@@ -58,6 +111,7 @@
   function importJson(text) {
     var data = JSON.parse(text);
     if (!data || typeof data !== "object") throw new Error("Invalid file");
+    normalizeHouseholdData(data);
     save(data);
     return data;
   }
@@ -66,6 +120,10 @@
     return (data.members || []).find(function (m) {
       return m.id === id;
     });
+  }
+
+  function isValidPayload(o) {
+    return !!(o && typeof o === "object" && Array.isArray(o.members));
   }
 
   global.HouseholdStore = {
@@ -77,5 +135,6 @@
     exportJson: exportJson,
     importJson: importJson,
     memberById: memberById,
+    isValidPayload: isValidPayload,
   };
 })(window);

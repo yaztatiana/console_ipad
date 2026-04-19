@@ -4,3 +4,4 @@ __pycache__/
 *.py[cod]
 .Python
 .DS_Store
+household-console/shared/sync-config.json

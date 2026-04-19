@@ -3,9 +3,64 @@
 
   var HC = window.HouseholdCalendar;
   var HS = window.HouseholdStore;
+  var HSync = window.HouseholdSync;
+  var pushTimer = null;
 
   function $(id) {
     return document.getElementById(id);
+  }
+
+  function saveLocalAndSync(data) {
+    HS.save(data);
+    scheduleCloudPush();
+  }
+
+  function scheduleCloudPush() {
+    if (pushTimer) clearTimeout(pushTimer);
+    pushTimer = setTimeout(function () {
+      pushTimer = null;
+      doCloudPush(true);
+    }, 1400);
+  }
+
+  function doCloudPush(silent) {
+    return HSync.ready().then(function (ok) {
+      if (!ok) return;
+      var k = HSync.getLocalSyncKey();
+      if (!k) return;
+      var data = HS.load();
+      return HSync.push(k, data).then(
+        function () {
+          if (!silent) toast("Pushed to cloud", "ok");
+          updateSyncUi();
+        },
+        function (e) {
+          if (!silent) toast("Push failed: " + (e && e.message ? e.message : "error"), "err");
+          updateSyncUi();
+        }
+      );
+    });
+  }
+
+  function updateSyncUi() {
+    var el = $("sync-status");
+    if (!el) return;
+    HSync.ready().then(function (ok) {
+      var k = HSync.getLocalSyncKey();
+      if (!ok) {
+        el.textContent =
+          "Cloud: not configured — add shared/sync-config.json (see example) and redeploy.";
+        el.classList.remove("is-live");
+        return;
+      }
+      if (!k) {
+        el.textContent = "Cloud: configured — generate or paste a sync key, then save.";
+        el.classList.remove("is-live");
+        return;
+      }
+      el.textContent = "Cloud: live · key " + k.slice(0, 8) + "… (last write wins)";
+      el.classList.add("is-live");
+    });
   }
 
   function toast(msg, kind) {
@@ -97,7 +152,7 @@
           if (c.assigneeId === m.id) c.assigneeId = null;
           return c;
         });
-        HS.save(data);
+        saveLocalAndSync(data);
         renderAll();
         toast("Member removed", "ok");
       });
@@ -171,13 +226,63 @@
         data.events = (data.events || []).filter(function (x) {
           return x.id !== ev.id;
         });
-        HS.save(data);
+        saveLocalAndSync(data);
         renderAll();
         toast("Event deleted", "ok");
       });
       li.appendChild(left);
       li.appendChild(btn);
       ul.appendChild(li);
+    });
+  }
+
+  function ensureShoppingColumns(data) {
+    if (!Array.isArray(data.shoppingColumns)) data.shoppingColumns = [[], []];
+    while (data.shoppingColumns.length < 2) data.shoppingColumns.push([]);
+    data.shoppingColumns = data.shoppingColumns.slice(0, 2);
+  }
+
+  function renderShopping() {
+    var data = HS.load();
+    ensureShoppingColumns(data);
+    [0, 1].forEach(function (colIdx) {
+      var ul = $("shop-list-" + colIdx);
+      if (!ul) return;
+      ul.innerHTML = "";
+      (data.shoppingColumns[colIdx] || []).forEach(function (item) {
+        var li = document.createElement("li");
+        li.className = "item shop-item" + (item.checked ? " is-checked" : "");
+        var left = document.createElement("div");
+        left.className = "shop-item__main";
+        var cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.checked = !!item.checked;
+        cb.setAttribute("aria-label", "Got it");
+        cb.addEventListener("change", function () {
+          item.checked = cb.checked;
+          saveLocalAndSync(data);
+          renderShopping();
+        });
+        var sp = document.createElement("span");
+        sp.textContent = item.text || "(empty)";
+        left.appendChild(cb);
+        left.appendChild(sp);
+        var del = document.createElement("button");
+        del.type = "button";
+        del.className = "danger";
+        del.textContent = "Remove";
+        del.addEventListener("click", function () {
+          data.shoppingColumns[colIdx] = (data.shoppingColumns[colIdx] || []).filter(function (x) {
+            return x.id !== item.id;
+          });
+          saveLocalAndSync(data);
+          renderShopping();
+          toast("Item removed", "ok");
+        });
+        li.appendChild(left);
+        li.appendChild(del);
+        ul.appendChild(li);
+      });
     });
   }
 
@@ -216,7 +321,7 @@
       b1.textContent = c.done ? "Undo" : "Done";
       b1.addEventListener("click", function () {
         c.done = !c.done;
-        HS.save(data);
+        saveLocalAndSync(data);
         renderAll();
       });
       var b2 = document.createElement("button");
@@ -227,7 +332,7 @@
         data.chores = (data.chores || []).filter(function (x) {
           return x.id !== c.id;
         });
-        HS.save(data);
+        saveLocalAndSync(data);
         renderAll();
         toast("Chore removed", "ok");
       });
@@ -239,9 +344,9 @@
     });
   }
 
-  function buildMealEditor() {
+  function buildDinnerEditor() {
     var data = HS.load();
-    var root = $("meal-week");
+    var root = $("dinner-week");
     if (!root) return;
     root.innerHTML = "";
     var days = HC.weekDates(new Date());
@@ -253,61 +358,127 @@
       h.textContent =
         d.toLocaleDateString(undefined, { weekday: "short" }) + " " + d.getDate();
       col.appendChild(h);
-      ["breakfast", "lunch", "dinner"].forEach(function (meal) {
-        var lab = document.createElement("label");
-        lab.textContent = meal.charAt(0).toUpperCase() + meal.slice(1);
-        var inp = document.createElement("input");
-        inp.type = "text";
-        inp.dataset.date = iso;
-        inp.dataset.meal = meal;
-        var cur = (data.meals && data.meals[iso] && data.meals[iso][meal]) || "";
-        inp.value = cur;
-        col.appendChild(lab);
-        col.appendChild(inp);
-      });
+      var lab = document.createElement("label");
+      lab.textContent = "Dinner";
+      var inp = document.createElement("input");
+      inp.type = "text";
+      inp.placeholder = "Tonight";
+      inp.dataset.date = iso;
+      inp.dataset.meal = "dinner";
+      var cur = (data.meals && data.meals[iso] && data.meals[iso].dinner) || "";
+      inp.value = cur;
+      col.appendChild(lab);
+      col.appendChild(inp);
       root.appendChild(col);
     });
   }
 
-  function saveMealsFromEditor() {
+  function saveDinnerFromEditor() {
     var data = HS.load();
     if (!data.meals) data.meals = {};
-    var root = $("meal-week");
+    var root = $("dinner-week");
     if (!root) return;
     root.querySelectorAll("input[data-date]").forEach(function (inp) {
       var iso = inp.getAttribute("data-date");
       var meal = inp.getAttribute("data-meal");
-      if (!iso || !meal) return;
+      if (!iso || meal !== "dinner") return;
       if (!data.meals[iso]) data.meals[iso] = {};
       var v = String(inp.value || "").trim();
       if (!v) {
-        delete data.meals[iso][meal];
+        delete data.meals[iso].dinner;
         if (Object.keys(data.meals[iso]).length === 0) delete data.meals[iso];
       } else {
-        data.meals[iso][meal] = v;
+        data.meals[iso].dinner = v;
       }
     });
-    HS.save(data);
-    toast("Meals saved", "ok");
+    saveLocalAndSync(data);
+    toast("Dinner saved", "ok");
   }
 
   function renderAll() {
     var data = HS.load();
+    if (window.HouseholdThemes && data.uiTheme) {
+      window.HouseholdThemes.apply(data.uiTheme);
+    }
     var hn = $("house-name");
     if (hn) hn.value = data.householdName || "";
+    var wlat = $("weather-lat");
+    var wlon = $("weather-lon");
+    if (wlat && data.weatherLocation) wlat.value = String(data.weatherLocation.lat);
+    if (wlon && data.weatherLocation) wlon.value = String(data.weatherLocation.lon);
+    var ts = $("theme-select");
+    if (ts && window.HouseholdThemes && data.uiTheme) {
+      ts.value = data.uiTheme;
+    }
     renderMembers();
     renderEvents();
     renderChores();
+    renderShopping();
     renderEventMemberChecks();
     refreshMemberSelects();
-    buildMealEditor();
+    buildDinnerEditor();
+    updateSyncUi();
   }
 
   function wire() {
+    var ski = $("sync-key-input");
+    if (ski) ski.value = HSync.getLocalSyncKey() || "";
+
+    $("btn-gen-sync-key").addEventListener("click", function () {
+      $("sync-key-input").value = HSync.generateSyncKey();
+      toast("New key — save it on every device that shares this home", "ok");
+    });
+
+    $("btn-save-sync-key").addEventListener("click", function () {
+      var v = String($("sync-key-input").value || "").trim();
+      if (v.length < 20) {
+        toast("Use at least 20 characters (UUID is best)", "err");
+        return;
+      }
+      HSync.setLocalSyncKey(v);
+      updateSyncUi();
+      toast("Sync key saved on this device", "ok");
+    });
+
+    $("btn-pull-cloud").addEventListener("click", function () {
+      var k = HSync.getLocalSyncKey() || String($("sync-key-input").value || "").trim();
+      if (k.length < 20) {
+        toast("Set a sync key first", "err");
+        return;
+      }
+      HSync.pull(k).then(
+        function (remote) {
+          if (!remote || !HS.isValidPayload(remote)) {
+            toast("Nothing in cloud yet — push from Manage first", "err");
+            return;
+          }
+          HS.save(remote);
+          HSync.setLocalSyncKey(k);
+          if ($("sync-key-input")) $("sync-key-input").value = k;
+          renderAll();
+          toast("Loaded from cloud", "ok");
+        },
+        function (e) {
+          toast("Pull failed: " + (e && e.message ? e.message : "error"), "err");
+        }
+      );
+    });
+
+    $("btn-push-cloud").addEventListener("click", function () {
+      doCloudPush(false);
+    });
+
     $("btn-save-house").addEventListener("click", function () {
       var data = HS.load();
       data.householdName = String($("house-name").value || "").trim() || "Home";
-      HS.save(data);
+      var lat = parseFloat(String($("weather-lat").value || "").trim());
+      var lon = parseFloat(String($("weather-lon").value || "").trim());
+      if (!data.weatherLocation || typeof data.weatherLocation !== "object") {
+        data.weatherLocation = { lat: 40.7128, lon: -74.006 };
+      }
+      if (Number.isFinite(lat)) data.weatherLocation.lat = lat;
+      if (Number.isFinite(lon)) data.weatherLocation.lon = lon;
+      saveLocalAndSync(data);
       toast("Household saved", "ok");
     });
 
@@ -323,7 +494,7 @@
         name: name,
         color: $("member-color").value || "#5b8def",
       });
-      HS.save(data);
+      saveLocalAndSync(data);
       $("member-name").value = "";
       renderAll();
       toast("Member added", "ok");
@@ -351,7 +522,7 @@
         end: end,
         memberIds: ids,
       });
-      HS.save(data);
+      saveLocalAndSync(data);
       $("ev-title").value = "";
       $("ev-end").value = "";
       renderAll();
@@ -375,13 +546,39 @@
         dueWeekday: due,
         done: false,
       });
-      HS.save(data);
+      saveLocalAndSync(data);
       $("ch-title").value = "";
       renderAll();
       toast("Chore added", "ok");
     });
 
-    $("btn-save-meals").addEventListener("click", saveMealsFromEditor);
+    $("btn-save-dinner").addEventListener("click", saveDinnerFromEditor);
+
+    function wireAddShop(colIdx) {
+      var btn = $("btn-add-shop-" + colIdx);
+      var inp = $("shop-input-" + colIdx);
+      if (!btn || !inp) return;
+      btn.addEventListener("click", function () {
+        var text = String(inp.value || "").trim();
+        if (!text) {
+          toast("Enter an item", "err");
+          return;
+        }
+        var data = HS.load();
+        ensureShoppingColumns(data);
+        data.shoppingColumns[colIdx].push({
+          id: HS.uid(),
+          text: text,
+          checked: false,
+        });
+        inp.value = "";
+        saveLocalAndSync(data);
+        renderShopping();
+        toast("Added to list " + (colIdx + 1), "ok");
+      });
+    }
+    wireAddShop(0);
+    wireAddShop(1);
 
     $("btn-export").addEventListener("click", function () {
       var data = HS.load();
@@ -394,6 +591,25 @@
       toast("Download started", "ok");
     });
 
+    (function wireThemeSelect() {
+      var sel = $("theme-select");
+      if (!sel || !window.HouseholdThemes) return;
+      sel.innerHTML = "";
+      window.HouseholdThemes.ids.forEach(function (id) {
+        var o = document.createElement("option");
+        o.value = id;
+        o.textContent = window.HouseholdThemes.label(id);
+        sel.appendChild(o);
+      });
+      sel.addEventListener("change", function () {
+        var id = window.HouseholdThemes.apply(sel.value);
+        var data = HS.load();
+        data.uiTheme = id;
+        saveLocalAndSync(data);
+        toast("Theme: " + window.HouseholdThemes.label(id), "ok");
+      });
+    })();
+
     $("file-import").addEventListener("change", function (e) {
       var f = e.target.files && e.target.files[0];
       if (!f) return;
@@ -402,6 +618,7 @@
         try {
           HS.importJson(String(reader.result || ""));
           renderAll();
+          scheduleCloudPush();
           toast("Import complete", "ok");
         } catch (err) {
           toast("Import failed", "err");

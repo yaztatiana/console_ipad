@@ -1,0 +1,160 @@
+/* Dark academia — aged paper, oil lamp, leather binding (night) */
+html[data-theme="academia-night"] {
+  --font-display: "Cutive Mono", "Anonymous Pro", ui-monospace, monospace;
+  --font-sans: "Anonymous Pro", "Cutive Mono", ui-monospace, monospace;
+  --font-mono: "Anonymous Pro", ui-monospace, monospace;
+
+  --ink: #100e0b;
+  --void: #1a1510;
+  --surface: rgba(42, 36, 30, 0.9);
+  --surface-2: rgba(30, 26, 22, 0.94);
+  --text: #f5ede3;
+  --muted: #b5a794;
+  --line: rgba(201, 162, 39, 0.22);
+
+  --coral: #c46a6a;
+  --amber: #deb45e;
+  --mint: #759586;
+  --violet: #9a8ab0;
+  --sky: #9aafbc;
+
+  --accent: #d4af37;
+  --accent-2: #8b5a42;
+  --danger: #d0707a;
+  --ok: #86b89a;
+
+  --radius-lg: 14px;
+  --radius-md: 10px;
+  --shadow-deep: 0 26px 76px rgba(0, 0, 0, 0.72);
+  --shadow-glow:
+    0 0 40px rgba(212, 175, 55, 0.12),
+    0 0 80px rgba(180, 140, 80, 0.06);
+
+  --tv-mesh-1: rgba(100, 70, 50, 0.28);
+  --tv-mesh-2: rgba(201, 162, 39, 0.12);
+  --tv-mesh-3: rgba(55, 72, 58, 0.2);
+  --tv-base-a: #1c1712;
+  --tv-base-b: #15120e;
+  --tv-base-c: #0f0d0a;
+
+  --manage-mesh-1: rgba(95, 68, 48, 0.38);
+  --manage-mesh-2: rgba(201, 162, 39, 0.1);
+  --manage-fade-top: #261f18;
+
+  --noise-opacity: 0.13;
+  --clock-color: #f0e4c8;
+  --clock-glow: rgba(212, 175, 55, 0.32);
+}
+
+/* TV week: each column reads as a leather-bound book; weekday = spine title */
+html[data-theme="academia-night"] .week {
+  gap: 0.4rem;
+}
+
+html[data-theme="academia-night"] .day {
+  flex-direction: row;
+  align-items: stretch;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 2px 10px 10px 2px;
+  background: linear-gradient(
+    90deg,
+    #1a1510 0%,
+    #3a3228 10%,
+    #4d4036 28%,
+    #3d342c 55%,
+    #252018 100%
+  );
+  border: 1px solid rgba(20, 16, 12, 0.95);
+  border-left: 5px solid #6b4e2a;
+  box-shadow:
+    inset -8px 0 18px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    4px 8px 16px rgba(0, 0, 0, 0.55);
+  backdrop-filter: none;
+}
+
+html[data-theme="academia-night"] .day.is-today {
+  border-left-color: #d4af37;
+  box-shadow:
+    inset -8px 0 18px rgba(0, 0, 0, 0.45),
+    0 0 0 2px rgba(212, 175, 55, 0.28),
+    4px 10px 20px rgba(0, 0, 0, 0.55);
+}
+
+html[data-theme="academia-night"] .day__name {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  flex: 0 0 clamp(1.65rem, 2.5vw, 2.1rem);
+  margin: 0;
+  padding: 0.45rem 0.15rem;
+  font-family: var(--font-display);
+  font-size: clamp(0.58rem, 1.05vw, 0.72rem);
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  color: #e8dcc8;
+  text-transform: uppercase;
+  border-right: 1px solid rgba(0, 0, 0, 0.45);
+  background: linear-gradient(180deg, #5c4a38 0%, #3d3228 45%, #221c18 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+html[data-theme="academia-night"] .day__stack {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.4rem 0.45rem 0.5rem 0.5rem;
+  background: linear-gradient(180deg, rgba(55, 48, 40, 0.5) 0%, rgba(28, 24, 20, 0.25) 100%);
+}
+
+html[data-theme="academia-night"] .day__num {
+  font-family: var(--font-mono);
+  font-size: clamp(0.95rem, 1.85vw, 1.35rem);
+  font-weight: 700;
+  padding-bottom: 0.2rem;
+  margin: 0;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.12);
+  color: var(--text);
+}
+
+html[data-theme="academia-night"] .day .ev {
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Manage dinner week grid: weekday strip as narrow spine */
+html[data-theme="academia-night"] .daycol {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  border-radius: 4px 10px 10px 4px;
+  border: 1px solid rgba(42, 34, 28, 0.85);
+  background: linear-gradient(180deg, rgba(42, 36, 30, 0.55) 0%, rgba(22, 18, 14, 0.4) 100%);
+  box-shadow: 3px 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+html[data-theme="academia-night"] .daycol h3 {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  align-self: center;
+  min-height: 5.5rem;
+  margin: 0 0 0.5rem;
+  padding: 0.35rem 0.2rem;
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #e8dcc8;
+  border: 1px solid rgba(0, 0, 0, 0.35);
+  border-left: 3px solid #6b4e2a;
+  border-radius: 2px 6px 6px 2px;
+  background: linear-gradient(180deg, #5c4a38 0%, #2a2218 100%);
+  box-shadow: inset -3px 0 6px rgba(0, 0, 0, 0.35);
+}
+

@@ -3,20 +3,52 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#0b0d12" />
+    <meta name="theme-color" content="#0e1018" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
     <title>Home console — Manage</title>
     <link rel="manifest" href="./manifest.json" />
+    <script src="../shared/themes.js"></script>
     <link rel="stylesheet" href="./manage.css" />
   </head>
   <body>
+    <div class="graffiti-rail graffiti-rail--top" aria-hidden="true">
+      <div class="graffiti-rail__inner">
+        <span class="graffiti-burst">LIVE</span>
+        <span class="graffiti-burst graffiti-burst--cyan">24/7</span>
+        <span class="graffiti-burst graffiti-burst--lime">CTRL</span>
+        <span class="graffiti-burst graffiti-burst--pink">HOME</span>
+        <span class="graffiti-burst graffiti-burst--gold">VIVA</span>
+      </div>
+    </div>
+    <div class="sailor-sky sailor-sky--manage" aria-hidden="true">
+      <span class="sailor-moon" aria-hidden="true">🌙</span>
+      <span class="sailor-moon sailor-moon--echo" aria-hidden="true">🌕</span>
+      <span class="sailor-star" aria-hidden="true">✦</span>
+      <span class="sailor-star" aria-hidden="true">★</span>
+      <span class="sailor-star" aria-hidden="true">✧</span>
+      <span class="sailor-star" aria-hidden="true">✦</span>
+      <span class="sailor-star" aria-hidden="true">⋆</span>
+      <span class="sailor-star" aria-hidden="true">★</span>
+      <span class="sailor-star" aria-hidden="true">✦</span>
+      <span class="sailor-star" aria-hidden="true">✧</span>
+      <span class="sailor-star" aria-hidden="true">★</span>
+      <span class="sailor-star" aria-hidden="true">✦</span>
+      <span class="sailor-star" aria-hidden="true">⋆</span>
+      <span class="sailor-star" aria-hidden="true">✧</span>
+      <span class="sailor-star" aria-hidden="true">★</span>
+      <span class="sailor-star" aria-hidden="true">✦</span>
+      <span class="sailor-star" aria-hidden="true">✧</span>
+      <span class="sailor-star" aria-hidden="true">★</span>
+      <span class="sailor-star" aria-hidden="true">✦</span>
+    </div>
     <div class="wrap">
       <header class="top">
         <div>
           <h1>Household manage</h1>
           <p class="sub">
-            Calendar, chores, meals — stored in this browser until you connect AWS data APIs.
+            Calendar, chores, shopping, dinner — local first, optional Supabase sync for TVs and
+            other browsers.
           </p>
         </div>
         <div class="actions">
@@ -37,10 +69,70 @@
             <input id="house-name" type="text" class="small" autocomplete="organization" />
             <button type="button" class="primary" id="btn-save-house">Save</button>
           </div>
-          <p class="muted">
-            Tip: export after edits, import on the Fire TV Silk tab (same site) to sync without a
-            server — or add Amplify Data / AppSync next.
+          <div class="row" style="margin-top: 0.65rem; flex-wrap: wrap; align-items: flex-end">
+            <label for="weather-lat" style="width: 100%">TV weather (latitude, longitude)</label>
+            <input
+              id="weather-lat"
+              type="number"
+              step="any"
+              class="small"
+              placeholder="40.7128"
+              aria-label="Weather latitude"
+            />
+            <input
+              id="weather-lon"
+              type="number"
+              step="any"
+              class="small"
+              placeholder="-74.0060"
+              aria-label="Weather longitude"
+            />
+          </div>
+          <p class="muted" style="margin-top: 0.35rem">
+            Used for the TV “Today” screen (Open-Meteo). Saved with the button above.
           </p>
+          <p class="muted">
+            Tip: still export JSON as a backup. TVs can pull from Supabase when sync is on.
+          </p>
+        </section>
+
+        <section class="card">
+          <h2>Appearance</h2>
+          <p class="muted">Applies to Manage and TV. Synced when cloud sync is on.</p>
+          <div class="row" style="align-items: flex-end; flex-wrap: wrap">
+            <div class="theme-inline">
+              <label for="theme-select">Interface theme</label>
+              <select id="theme-select" aria-label="Interface theme"></select>
+            </div>
+          </div>
+        </section>
+
+        <section class="card" style="grid-column: 1 / -1">
+          <h2>Cloud sync (Supabase)</h2>
+          <p class="muted">
+            Copy
+            <code>shared/sync-config.example.json</code>
+            to
+            <code>shared/sync-config.json</code>
+            with your project URL + anon key, deploy, then set one shared sync key for the whole
+            house (treat it like a password).
+          </p>
+          <div id="sync-status" class="sync-status" aria-live="polite">Checking sync…</div>
+          <div class="row" style="margin-top: 0.75rem; flex-direction: column; align-items: stretch">
+            <label for="sync-key-input">Household sync key</label>
+            <input
+              id="sync-key-input"
+              type="password"
+              autocomplete="off"
+              placeholder="Generate or paste the key you used on another device"
+            />
+            <div class="row" style="margin-top: 0.55rem">
+              <button type="button" id="btn-gen-sync-key">Generate new</button>
+              <button type="button" class="primary" id="btn-save-sync-key">Save on this device</button>
+              <button type="button" id="btn-pull-cloud">Pull from cloud</button>
+              <button type="button" id="btn-push-cloud">Push to cloud</button>
+            </div>
+          </div>
         </section>
 
         <section class="card">
@@ -76,44 +168,76 @@
           </div>
         </section>
 
-        <section class="card grid-2" style="grid-column: 1 / -1">
-          <div>
-            <h2>Chores</h2>
-            <div class="row" style="flex-direction: column; align-items: stretch">
-              <label for="ch-title">Title</label>
-              <input id="ch-title" type="text" placeholder="Vacuum living room" />
-              <label for="ch-assign" style="margin-top: 0.35rem">Assign</label>
-              <select id="ch-assign"></select>
-              <label for="ch-day" style="margin-top: 0.35rem">Due weekday</label>
-              <select id="ch-day">
-                <option value="">Any</option>
-                <option value="0">Sunday</option>
-                <option value="1">Monday</option>
-                <option value="2">Tuesday</option>
-                <option value="3">Wednesday</option>
-                <option value="4">Thursday</option>
-                <option value="5">Friday</option>
-                <option value="6">Saturday</option>
-              </select>
-              <button type="button" class="primary" id="btn-add-chore" style="margin-top: 0.65rem">
-                Add chore
-              </button>
+        <section class="card chore-shop-card" style="grid-column: 1 / -1">
+          <div class="chore-shop-grid">
+            <div class="chore-shop-chores">
+              <h2>Chores</h2>
+              <div class="row" style="flex-direction: column; align-items: stretch">
+                <label for="ch-title">Title</label>
+                <input id="ch-title" type="text" placeholder="Vacuum living room" />
+                <label for="ch-assign" style="margin-top: 0.35rem">Assign</label>
+                <select id="ch-assign"></select>
+                <label for="ch-day" style="margin-top: 0.35rem">Due weekday</label>
+                <select id="ch-day">
+                  <option value="">Any</option>
+                  <option value="0">Sunday</option>
+                  <option value="1">Monday</option>
+                  <option value="2">Tuesday</option>
+                  <option value="3">Wednesday</option>
+                  <option value="4">Thursday</option>
+                  <option value="5">Friday</option>
+                  <option value="6">Saturday</option>
+                </select>
+                <button type="button" class="primary" id="btn-add-chore" style="margin-top: 0.65rem">
+                  Add chore
+                </button>
+              </div>
+              <h3 class="chore-board-title">To do</h3>
+              <ul class="list" id="chore-list"></ul>
             </div>
-          </div>
-          <div>
-            <h2>Board</h2>
-            <ul class="list" id="chore-list"></ul>
+            <div class="shopping-col">
+              <h2>Shopping</h2>
+              <p class="muted">List 1</p>
+              <div class="row" style="flex-direction: column; align-items: stretch">
+                <input id="shop-input-0" type="text" placeholder="Add item" />
+                <button type="button" class="primary" id="btn-add-shop-0" style="margin-top: 0.5rem">
+                  Add item
+                </button>
+              </div>
+              <ul class="list" id="shop-list-0"></ul>
+            </div>
+            <div class="shopping-col">
+              <h2>Shopping</h2>
+              <p class="muted">List 2</p>
+              <div class="row" style="flex-direction: column; align-items: stretch">
+                <input id="shop-input-1" type="text" placeholder="Add item" />
+                <button type="button" class="primary" id="btn-add-shop-1" style="margin-top: 0.5rem">
+                  Add item
+                </button>
+              </div>
+              <ul class="list" id="shop-list-1"></ul>
+            </div>
           </div>
         </section>
 
         <section class="card" style="grid-column: 1 / -1">
-          <h2>Meal plan (this week)</h2>
+          <h2>Dinner plan (this week)</h2>
           <p class="muted">Monday-start week, same as the TV board.</p>
-          <div id="meal-week" class="week-editor"></div>
-          <button type="button" class="primary" id="btn-save-meals" style="margin-top: 0.85rem">
-            Save meals
+          <div id="dinner-week" class="week-editor"></div>
+          <button type="button" class="primary" id="btn-save-dinner" style="margin-top: 0.85rem">
+            Save dinner
           </button>
         </section>
+      </div>
+    </div>
+
+    <div class="graffiti-rail graffiti-rail--bottom" aria-hidden="true">
+      <div class="graffiti-rail__inner graffiti-rail__inner--flip">
+        <span class="graffiti-burst graffiti-burst--pink">SILK</span>
+        <span class="graffiti-burst graffiti-burst--cyan">STREAM</span>
+        <span class="graffiti-burst">WALL</span>
+        <span class="graffiti-burst graffiti-burst--lime">UP</span>
+        <span class="graffiti-burst graffiti-burst--gold">LAS VEGAS</span>
       </div>
     </div>
 
@@ -121,6 +245,7 @@
 
     <script src="../shared/calendar.js"></script>
     <script src="../shared/store.js"></script>
+    <script src="../shared/sync.js"></script>
     <script src="./manage.js"></script>
     <script>
       if ("serviceWorker" in navigator) {
