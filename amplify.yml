@@ -1,23 +1,14 @@
-# AWS Amplify Hosting: connect this repo in Amplify Console (see household-console/AMAZON-SETUP.txt).
-# Optional: set environment variables SUPABASE_URL and SUPABASE_ANON_KEY in Amplify so
-# shared/sync-config.json is generated at build time (file is gitignored locally).
+# AWS Amplify Hosting. Logic lives in scripts/ so YAML has no bare colons in commands.
+# See household-console/AMAZON-SETUP.txt
 version: 1
 frontend:
   phases:
     preBuild:
       commands:
-        - |
-          if [ -n "${SUPABASE_URL:-}" ] && [ -n "${SUPABASE_ANON_KEY:-}" ]; then
-            node -e "const fs=require('fs');const p='household-console/shared/sync-config.json';fs.writeFileSync(p,JSON.stringify({supabaseUrl:process.env.SUPABASE_URL,supabaseAnonKey:process.env.SUPABASE_ANON_KEY}));console.log('Wrote',p,'for Supabase sync.');"
-          else
-            echo "Optional: set SUPABASE_URL and SUPABASE_ANON_KEY in Amplify to emit sync-config.json."
-          fi
+        - bash scripts/amplify-prebuild.sh
     build:
       commands:
-        - test -f household-console/tv/index.html || (echo "ERROR: missing household-console/tv/index.html" && exit 1)
-        - test -f household-console/manage/index.html || (echo "ERROR: missing household-console/manage/index.html" && exit 1)
-        - test -f household-console/shared/store.js || (echo "ERROR: missing household-console/shared/store.js" && exit 1)
-        - echo "Household console static bundle verified for Amplify Hosting."
+        - bash scripts/amplify-verify.sh
   artifacts:
     baseDirectory: household-console
     files:

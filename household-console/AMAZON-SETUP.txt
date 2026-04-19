@@ -6,15 +6,17 @@ This app is static HTML/CSS/JS. "Connections" mean: (1) host it on AWS Amplify,
 
 Build (repo root amplify.yml)
 -------------------------------
+  • Commands call scripts/amplify-prebuild.sh and scripts/amplify-verify.sh so
+    the buildspec avoids bare ":" characters in YAML (Amplify rejects those as
+    malformed unless every such command is fully quoted).
   • preBuild: optionally writes household-console/shared/sync-config.json when
     SUPABASE_URL and SUPABASE_ANON_KEY are set in Amplify environment variables.
   • build: verifies tv/index.html, manage/index.html, and shared/store.js exist,
     then publishes the household-console/ folder as the site root (no compile step).
 
-To sanity-check locally from the repository root (same commands as Amplify):
+To sanity-check locally from the repository root (same as Amplify):
 
-  bash -c 'if [ -n "${SUPABASE_URL:-}" ] && [ -n "${SUPABASE_ANON_KEY:-}" ]; then node -e "const fs=require(\"fs\");fs.writeFileSync(\"household-console/shared/sync-config.json\",JSON.stringify({supabaseUrl:process.env.SUPABASE_URL,supabaseAnonKey:process.env.SUPABASE_ANON_KEY}));"; fi'
-  test -f household-console/tv/index.html && test -f household-console/manage/index.html && echo OK
+  bash scripts/amplify-prebuild.sh && bash scripts/amplify-verify.sh
 
 
 1) AWS Amplify Hosting (recommended)
