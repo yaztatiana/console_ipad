@@ -6,6 +6,71 @@
   var HSync = window.HouseholdSync;
   var pushTimer = null;
 
+  /** Representative points for TV weather (Open-Meteo). Not a full TZ database — good enough for forecast. */
+  var WEATHER_PRESETS = [
+    { id: "us-hawaii", label: "Hawaii", lat: 21.3069, lon: -157.8583 },
+    { id: "us-alaska", label: "Alaska (Anchorage area)", lat: 61.2181, lon: -149.9003 },
+    { id: "us-pacific", label: "Pacific — US West Coast", lat: 37.7749, lon: -122.4194 },
+    { id: "us-mountain", label: "Mountain — Denver area", lat: 39.7392, lon: -104.9903 },
+    { id: "us-arizona", label: "Arizona (Phoenix area)", lat: 33.4484, lon: -112.074 },
+    { id: "us-central", label: "Central — Chicago area", lat: 41.8781, lon: -87.6298 },
+    { id: "us-eastern", label: "Eastern — NYC area", lat: 40.7128, lon: -74.006 },
+    { id: "americas-atlantic", label: "Atlantic / Eastern Caribbean", lat: 25.7617, lon: -80.1918 },
+    { id: "eu-uk", label: "UK / Ireland", lat: 51.5074, lon: -0.1278 },
+    { id: "eu-central", label: "Central Europe (Munich area)", lat: 48.1351, lon: 11.582 },
+    { id: "eu-west", label: "Western Europe (Paris)", lat: 48.8566, lon: 2.3522 },
+    { id: "asia-tokyo", label: "Japan (Tokyo area)", lat: 35.6762, lon: 139.6503 },
+    { id: "asia-seoul", label: "Korea (Seoul area)", lat: 37.5665, lon: 126.978 },
+    { id: "aus-sydney", label: "Australia — Sydney area", lat: -33.8688, lon: 151.2093 },
+    { id: "nz-auckland", label: "New Zealand (Auckland area)", lat: -36.8485, lon: 174.7633 },
+    { id: "custom", label: "Custom — latitude / longitude below", lat: null, lon: null },
+  ];
+
+  function weatherPresetById(id) {
+    for (var i = 0; i < WEATHER_PRESETS.length; i++) {
+      if (WEATHER_PRESETS[i].id === id) return WEATHER_PRESETS[i];
+    }
+    return null;
+  }
+
+  function inferWeatherPresetFromLatLon(lat, lon) {
+    var bestId = "custom";
+    var bestD = 64;
+    WEATHER_PRESETS.forEach(function (p) {
+      if (p.id === "custom" || p.lat == null) return;
+      var d =
+        (p.lat - lat) * (p.lat - lat) + (p.lon - lon) * (p.lon - lon);
+      if (d < bestD) {
+        bestD = d;
+        bestId = p.id;
+      }
+    });
+    return bestId;
+  }
+
+  function applyWeatherPresetToData(data, presetId) {
+    if (!data.weatherLocation || typeof data.weatherLocation !== "object") {
+      data.weatherLocation = { lat: 40.7128, lon: -74.006 };
+    }
+    if (presetId === "custom") {
+      data.weatherLocation.preset = "custom";
+      return;
+    }
+    var p = weatherPresetById(presetId);
+    if (p && p.lat != null && p.lon != null) {
+      data.weatherLocation.lat = p.lat;
+      data.weatherLocation.lon = p.lon;
+      data.weatherLocation.preset = presetId;
+    }
+  }
+
+  function updateWeatherCustomVisibility() {
+    var block = $("weather-custom-block");
+    var sel = $("weather-preset");
+    if (!block || !sel) return;
+    block.style.display = sel.value === "custom" ? "block" : "none";
+  }
+
   function $(id) {
     return document.getElementById(id);
   }
@@ -367,6 +432,7 @@
       inp.dataset.meal = "dinner";
       var cur = (data.meals && data.meals[iso] && data.meals[iso].dinner) || "";
       inp.value = cur;
+      inp.className = "edit-on-click";
       col.appendChild(lab);
       col.appendChild(inp);
       root.appendChild(col);
@@ -402,10 +468,22 @@
     }
     var hn = $("house-name");
     if (hn) hn.value = data.householdName || "";
+    var wp = $("weather-preset");
+    if (wp && data.weatherLocation) {
+      var pid = data.weatherLocation.preset;
+      if (!pid || !weatherPresetById(pid)) {
+        pid = inferWeatherPresetFromLatLon(
+          Number(data.weatherLocation.lat),
+          Number(data.weatherLocation.lon)
+        );
+      }
+      wp.value = pid;
+    }
     var wlat = $("weather-lat");
     var wlon = $("weather-lon");
     if (wlat && data.weatherLocation) wlat.value = String(data.weatherLocation.lat);
     if (wlon && data.weatherLocation) wlon.value = String(data.weatherLocation.lon);
+    updateWeatherCustomVisibility();
     var ts = $("theme-select");
     if (ts && window.HouseholdThemes && data.uiTheme) {
       ts.value = data.uiTheme;
@@ -418,9 +496,122 @@
     refreshMemberSelects();
     buildDinnerEditor();
     updateSyncUi();
+    lockEditOnClickFields();
+  }
+
+  function lockEditOnClickFields() {
+    var root = document.querySelector(".wrap");
+    if (!root) return;
+    root.querySelectorAll("input.edit-on-click").forEach(function (el) {
+      el.readOnly = true;
+    });
+  }
+
+  function wireEditOnClickDelegation() {
+    var root = document.querySelector(".wrap");
+    if (!root || root.dataset.editOnClickWired) return;
+    root.dataset.editOnClickWired = "1";
+    root.addEventListener(
+      "click",
+      function (e) {
+        var el = e.target.closest("input.edit-on-click");
+        if (el && el.readOnly) {
+          el.readOnly = false;
+        }
+      },
+      true
+    );
+    root.addEventListener(
+      "keydown",
+      function (e) {
+        var el = e.target;
+        if (!el.matches || !el.matches("input.edit-on-click")) return;
+        if (el.readOnly && (e.key === "Enter" || e.key === " ")) {
+          e.preventDefault();
+          el.readOnly = false;
+        }
+      },
+      true
+    );
+    root.addEventListener(
+      "blur",
+      function (e) {
+        var el = e.target;
+        if (el.matches && el.matches("input.edit-on-click")) {
+          el.readOnly = true;
+        }
+      },
+      true
+    );
+  }
+
+  function wireWeatherUi() {
+    var sp = $("weather-preset");
+    if (sp && !sp.dataset.wired) {
+      sp.dataset.wired = "1";
+      sp.innerHTML = "";
+      WEATHER_PRESETS.forEach(function (p) {
+        var o = document.createElement("option");
+        o.value = p.id;
+        o.textContent = p.label;
+        sp.appendChild(o);
+      });
+      sp.addEventListener("change", function () {
+        var data = HS.load();
+        applyWeatherPresetToData(data, sp.value);
+        saveLocalAndSync(data);
+        updateWeatherCustomVisibility();
+      });
+    }
+    var btn = $("btn-weather-lookup");
+    var inp = $("weather-place-search");
+    if (btn && inp && !btn.dataset.wired) {
+      btn.dataset.wired = "1";
+      btn.addEventListener("click", function () {
+        var q = String(inp.value || "").trim();
+        if (!q) {
+          toast("Enter a city or postal code", "err");
+          return;
+        }
+        var url =
+          "https://geocoding-api.open-meteo.com/v1/search?name=" +
+          encodeURIComponent(q) +
+          "&count=1";
+        fetch(url)
+          .then(function (r) {
+            if (!r.ok) throw new Error("lookup");
+            return r.json();
+          })
+          .then(function (j) {
+            if (!j.results || !j.results[0]) {
+              toast("No place found — try another spelling", "err");
+              return;
+            }
+            var place = j.results[0];
+            var data = HS.load();
+            if (!data.weatherLocation || typeof data.weatherLocation !== "object") {
+              data.weatherLocation = {};
+            }
+            data.weatherLocation.lat = place.latitude;
+            data.weatherLocation.lon = place.longitude;
+            data.weatherLocation.preset = "custom";
+            saveLocalAndSync(data);
+            var psel = $("weather-preset");
+            if (psel) psel.value = "custom";
+            updateWeatherCustomVisibility();
+            renderAll();
+            toast("Weather set — " + (place.name || "location"), "ok");
+          })
+          .catch(function () {
+            toast("Look-up failed — check connection", "err");
+          });
+      });
+    }
   }
 
   function wire() {
+    wireEditOnClickDelegation();
+    wireWeatherUi();
     var ski = $("sync-key-input");
     if (ski) ski.value = HSync.getLocalSyncKey() || "";
 
@@ -471,13 +662,19 @@
     $("btn-save-house").addEventListener("click", function () {
       var data = HS.load();
       data.householdName = String($("house-name").value || "").trim() || "Home";
-      var lat = parseFloat(String($("weather-lat").value || "").trim());
-      var lon = parseFloat(String($("weather-lon").value || "").trim());
-      if (!data.weatherLocation || typeof data.weatherLocation !== "object") {
-        data.weatherLocation = { lat: 40.7128, lon: -74.006 };
+      var pid = $("weather-preset") ? $("weather-preset").value : "us-eastern";
+      if (pid === "custom") {
+        var lat = parseFloat(String($("weather-lat").value || "").trim());
+        var lon = parseFloat(String($("weather-lon").value || "").trim());
+        if (!data.weatherLocation || typeof data.weatherLocation !== "object") {
+          data.weatherLocation = { lat: 40.7128, lon: -74.006 };
+        }
+        if (Number.isFinite(lat)) data.weatherLocation.lat = lat;
+        if (Number.isFinite(lon)) data.weatherLocation.lon = lon;
+        data.weatherLocation.preset = "custom";
+      } else {
+        applyWeatherPresetToData(data, pid);
       }
-      if (Number.isFinite(lat)) data.weatherLocation.lat = lat;
-      if (Number.isFinite(lon)) data.weatherLocation.lon = lon;
       saveLocalAndSync(data);
       toast("Household saved", "ok");
     });

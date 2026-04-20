@@ -1,4 +1,4 @@
-var MANAGE_CACHE = "home-console-manage-v5";
+var MANAGE_CACHE = "home-console-manage-v7";
 
 self.addEventListener("install", function (event) {
   self.skipWaiting();

@@ -29,7 +29,7 @@
       ],
       meals: {},
       shoppingColumns: [[], []],
-      weatherLocation: { lat: 40.7128, lon: -74.006 },
+      weatherLocation: { lat: 40.7128, lon: -74.006, preset: "us-eastern" },
       uiTheme: "sailor-day",
     };
   }
@@ -50,13 +50,16 @@
       });
     });
     if (!data.weatherLocation || typeof data.weatherLocation !== "object") {
-      data.weatherLocation = { lat: 40.7128, lon: -74.006 };
+      data.weatherLocation = { lat: 40.7128, lon: -74.006, preset: "us-eastern" };
     }
     var lat = Number(data.weatherLocation.lat);
     var lon = Number(data.weatherLocation.lon);
     if (!Number.isFinite(lat)) lat = 40.7128;
     if (!Number.isFinite(lon)) lon = -74.006;
+    var preset = data.weatherLocation.preset;
+    if (typeof preset !== "string") preset = undefined;
     data.weatherLocation = { lat: lat, lon: lon };
+    if (preset) data.weatherLocation.preset = preset;
 
     if (!data.uiTheme || !THEME_IDS[data.uiTheme]) {
       var fromLs = "";

@@ -66,30 +66,56 @@
           <h2>Household</h2>
           <div class="row">
             <label for="house-name">Name</label>
-            <input id="house-name" type="text" class="small" autocomplete="organization" />
+            <input
+              id="house-name"
+              type="text"
+              class="small edit-on-click"
+              autocomplete="organization"
+            />
             <button type="button" class="primary" id="btn-save-house">Save</button>
           </div>
-          <div class="row" style="margin-top: 0.65rem; flex-wrap: wrap; align-items: flex-end">
-            <label for="weather-lat" style="width: 100%">TV weather (latitude, longitude)</label>
+          <div class="row" style="margin-top: 0.65rem; flex-direction: column; align-items: stretch">
+            <label for="weather-preset">TV weather area</label>
+            <select id="weather-preset" aria-label="Approximate region for weather"></select>
+          </div>
+          <div class="row" style="margin-top: 0.55rem; flex-wrap: wrap; align-items: flex-end">
+            <label for="weather-place-search" style="width: 100%">Or look up city / postal code</label>
             <input
-              id="weather-lat"
-              type="number"
-              step="any"
+              id="weather-place-search"
+              type="text"
               class="small"
-              placeholder="40.7128"
-              aria-label="Weather latitude"
+              placeholder="e.g. 63101, Austin TX, London"
+              autocomplete="off"
+              aria-label="City or postal code for weather lookup"
             />
-            <input
-              id="weather-lon"
-              type="number"
-              step="any"
-              class="small"
-              placeholder="-74.0060"
-              aria-label="Weather longitude"
-            />
+            <button type="button" id="btn-weather-lookup">Look up</button>
+          </div>
+          <div id="weather-custom-block" class="weather-custom-block" style="display: none">
+            <div class="row" style="margin-top: 0.55rem; flex-wrap: wrap; align-items: flex-end">
+              <label for="weather-lat" style="width: 100%">Custom coordinates</label>
+              <input
+                id="weather-lat"
+                type="text"
+                inputmode="decimal"
+                class="small edit-on-click"
+                placeholder="Latitude"
+                aria-label="Weather latitude"
+                autocomplete="off"
+              />
+              <input
+                id="weather-lon"
+                type="text"
+                inputmode="decimal"
+                class="small edit-on-click"
+                placeholder="Longitude"
+                aria-label="Weather longitude"
+                autocomplete="off"
+              />
+            </div>
           </div>
           <p class="muted" style="margin-top: 0.35rem">
-            Used for the TV “Today” screen (Open-Meteo). Saved with the button above.
+            Used for the TV “Today” screen (Open-Meteo). Pick a region, search a place, or set custom
+            coordinates. Saved with Save above.
           </p>
           <p class="muted">
             Tip: still export JSON as a backup. TVs can pull from Supabase when sync is on.
@@ -138,7 +164,7 @@
         <section class="card">
           <h2>People</h2>
           <div class="row">
-            <input id="member-name" type="text" placeholder="Name" />
+            <input id="member-name" class="edit-on-click" type="text" placeholder="Name" />
             <input id="member-color" type="color" value="#5b8def" aria-label="Color" />
             <button type="button" class="primary" id="btn-add-member">Add</button>
           </div>
@@ -150,11 +176,11 @@
             <h2>Calendar events</h2>
             <div class="row" style="flex-direction: column; align-items: stretch">
               <label for="ev-title">Title</label>
-              <input id="ev-title" type="text" placeholder="School pickup" />
+              <input id="ev-title" class="edit-on-click" type="text" placeholder="School pickup" />
               <label for="ev-start" style="margin-top: 0.35rem">Starts</label>
-              <input id="ev-start" type="datetime-local" />
+              <input id="ev-start" class="edit-on-click" type="datetime-local" />
               <label for="ev-end" style="margin-top: 0.35rem">Ends (optional)</label>
-              <input id="ev-end" type="datetime-local" />
+              <input id="ev-end" class="edit-on-click" type="datetime-local" />
               <div style="margin-top: 0.5rem" class="muted">Who is involved?</div>
               <div id="ev-members" class="row" style="margin-top: 0.35rem"></div>
               <button type="button" class="primary" id="btn-add-event" style="margin-top: 0.65rem">
@@ -174,7 +200,7 @@
               <h2>Chores</h2>
               <div class="row" style="flex-direction: column; align-items: stretch">
                 <label for="ch-title">Title</label>
-                <input id="ch-title" type="text" placeholder="Vacuum living room" />
+                <input id="ch-title" class="edit-on-click" type="text" placeholder="Vacuum living room" />
                 <label for="ch-assign" style="margin-top: 0.35rem">Assign</label>
                 <select id="ch-assign"></select>
                 <label for="ch-day" style="margin-top: 0.35rem">Due weekday</label>
@@ -199,7 +225,7 @@
               <h2>Shopping</h2>
               <p class="muted">List 1</p>
               <div class="row" style="flex-direction: column; align-items: stretch">
-                <input id="shop-input-0" type="text" placeholder="Add item" />
+                <input id="shop-input-0" class="edit-on-click" type="text" placeholder="Add item" />
                 <button type="button" class="primary" id="btn-add-shop-0" style="margin-top: 0.5rem">
                   Add item
                 </button>
@@ -210,7 +236,7 @@
               <h2>Shopping</h2>
               <p class="muted">List 2</p>
               <div class="row" style="flex-direction: column; align-items: stretch">
-                <input id="shop-input-1" type="text" placeholder="Add item" />
+                <input id="shop-input-1" class="edit-on-click" type="text" placeholder="Add item" />
                 <button type="button" class="primary" id="btn-add-shop-1" style="margin-top: 0.5rem">
                   Add item
                 </button>
