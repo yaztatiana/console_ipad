@@ -75,6 +75,12 @@
     return document.getElementById(id);
   }
 
+  function onClick(id, handler) {
+    var el = $(id);
+    if (!el) return;
+    el.addEventListener("click", handler);
+  }
+
   function saveLocalAndSync(data) {
     HS.save(data);
     scheduleCloudPush();
@@ -657,12 +663,12 @@
     var ski = $("sync-key-input");
     if (ski) ski.value = HSync.getLocalSyncKey() || "";
 
-    $("btn-gen-sync-key").addEventListener("click", function () {
+    onClick("btn-gen-sync-key", function () {
       $("sync-key-input").value = HSync.generateSyncKey();
       toast("New key — save it on every device that shares this home", "ok");
     });
 
-    $("btn-save-sync-key").addEventListener("click", function () {
+    onClick("btn-save-sync-key", function () {
       var v = String($("sync-key-input").value || "").trim();
       if (v.length < 20) {
         toast("Use at least 20 characters (UUID is best)", "err");
@@ -673,7 +679,7 @@
       toast("Sync key saved on this device", "ok");
     });
 
-    $("btn-pull-cloud").addEventListener("click", function () {
+    onClick("btn-pull-cloud", function () {
       var k = HSync.getLocalSyncKey() || String($("sync-key-input").value || "").trim();
       if (k.length < 20) {
         toast("Set a sync key first", "err");
@@ -697,11 +703,11 @@
       );
     });
 
-    $("btn-push-cloud").addEventListener("click", function () {
+    onClick("btn-push-cloud", function () {
       doCloudPush(false);
     });
 
-    $("btn-save-house").addEventListener("click", function () {
+    onClick("btn-save-house", function () {
       var data = HS.load();
       data.householdName = String($("house-name").value || "").trim() || "Home";
       if ($("vegas-ticker-input")) {
@@ -725,7 +731,7 @@
       toast("Household saved", "ok");
     });
 
-    $("btn-add-member").addEventListener("click", function () {
+    onClick("btn-add-member", function () {
       var name = String($("member-name").value || "").trim();
       if (!name) {
         toast("Enter a name", "err");
@@ -758,7 +764,7 @@
       }, 0);
     });
 
-    $("btn-add-event").addEventListener("click", function () {
+    onClick("btn-add-event", function () {
       var title = String($("ev-title").value || "").trim();
       var start = fromLocalValue($("ev-start").value);
       if (!title || !start) {
@@ -787,7 +793,7 @@
       toast("Event added", "ok");
     });
 
-    $("btn-add-chore").addEventListener("click", function () {
+    onClick("btn-add-chore", function () {
       var title = String($("ch-title").value || "").trim();
       if (!title) {
         toast("Enter a chore title", "err");
@@ -810,7 +816,7 @@
       toast("Chore added", "ok");
     });
 
-    $("btn-save-dinner").addEventListener("click", saveDinnerFromEditor);
+    onClick("btn-save-dinner", saveDinnerFromEditor);
 
     function wireAddShop(colIdx) {
       var btn = $("btn-add-shop-" + colIdx);
@@ -838,7 +844,7 @@
     wireAddShop(0);
     wireAddShop(1);
 
-    $("btn-export").addEventListener("click", function () {
+    onClick("btn-export", function () {
       var data = HS.load();
       var blob = new Blob([HS.exportJson(data)], { type: "application/json" });
       var a = document.createElement("a");
@@ -882,24 +888,27 @@
       updateVegasTickerWordCount();
     })();
 
-    $("file-import").addEventListener("change", function (e) {
-      var f = e.target.files && e.target.files[0];
-      if (!f) return;
-      var reader = new FileReader();
-      reader.onload = function () {
-        try {
-          HS.importJson(String(reader.result || ""));
-          renderAll();
-          scheduleCloudPush();
-          toast("Import complete", "ok");
-        } catch (err) {
-          toast("Import failed", "err");
-        } finally {
-          e.target.value = "";
-        }
-      };
-      reader.readAsText(f);
-    });
+    var fi = $("file-import");
+    if (fi) {
+      fi.addEventListener("change", function (e) {
+        var f = e.target.files && e.target.files[0];
+        if (!f) return;
+        var reader = new FileReader();
+        reader.onload = function () {
+          try {
+            HS.importJson(String(reader.result || ""));
+            renderAll();
+            scheduleCloudPush();
+            toast("Import complete", "ok");
+          } catch (err) {
+            toast("Import failed", "err");
+          } finally {
+            e.target.value = "";
+          }
+        };
+        reader.readAsText(f);
+      });
+    }
   }
 
   if (document.readyState === "loading") {
