@@ -14,6 +14,9 @@
   <body class="tv-tenfoot">
     <div class="graffiti-rail graffiti-rail--top" aria-hidden="true">
       <div class="graffiti-rail__inner">
+        <div class="vegas-ticker" aria-hidden="true">
+          <span class="vegas-ticker__text" id="vegas-ticker-text"></span>
+        </div>
         <span class="graffiti-burst">LIVE</span>
         <span class="graffiti-burst graffiti-burst--cyan">24/7</span>
         <span class="graffiti-burst graffiti-burst--lime">CTRL</span>
@@ -51,8 +54,8 @@
       </header>
 
       <section class="tv-stage" aria-roledescription="carousel" aria-label="Home slides">
-        <div class="slide is-active" id="slide-today" tabindex="0" role="tabpanel" aria-label="Today">
-          <div class="slide__inner slide__inner--today"></div>
+        <div class="slide is-active" id="slide-schedule" tabindex="0" role="tabpanel" aria-label="Three day schedule">
+          <div class="slide__inner slide__inner--schedule"></div>
         </div>
         <div class="slide" id="slide-calendar" tabindex="0" role="tabpanel" aria-label="Calendar">
           <div class="slide__inner"></div>
@@ -66,11 +69,15 @@
         >
           <div class="slide__inner slide__inner--split"></div>
         </div>
+        <div class="slide" id="slide-shopping" tabindex="0" role="tabpanel" aria-label="Shopping lists">
+          <div class="slide__inner slide__inner--shopping"></div>
+        </div>
       </section>
 
       <footer class="tv-footer">
         <div class="dots" aria-hidden="true">
           <span class="dot is-on"></span>
+          <span class="dot"></span>
           <span class="dot"></span>
           <span class="dot"></span>
         </div>

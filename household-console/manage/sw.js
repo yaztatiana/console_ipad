@@ -1,4 +1,4 @@
-var MANAGE_CACHE = "home-console-manage-v7";
+var MANAGE_CACHE = "home-console-manage-v13";
 
 self.addEventListener("install", function (event) {
   self.skipWaiting();
@@ -13,10 +13,10 @@ self.addEventListener("install", function (event) {
         new URL("../shared/theme.css", base).href,
         new URL("../shared/themes.js", base).href,
         new URL("../shared/themes/fonts.css", base).href,
-        new URL("../shared/themes/sailor-day.css", base).href,
+        new URL("../shared/themes/sailor-moon-prism.css", base).href,
+        new URL("../shared/themes/sailor-sky.css", base).href,
         new URL("../shared/themes/academia-night.css", base).href,
         new URL("../shared/themes/vegas-street.css", base).href,
-        new URL("../shared/themes/sailor-sky.css", base).href,
         new URL("../shared/store.js", base).href,
         new URL("../shared/calendar.js", base).href,
         new URL("../shared/sync.js", base).href,

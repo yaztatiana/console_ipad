@@ -2,7 +2,11 @@
   "use strict";
 
   var STORAGE_KEY = "household-console-v1";
-  var THEME_IDS = { "sailor-day": 1, "academia-night": 1, "vegas-street": 1 };
+  var THEME_IDS = {
+    "sailor-moon-prism": 1,
+    "academia-night": 1,
+    "vegas-street": 1,
+  };
 
   function uid() {
     if (global.crypto && global.crypto.randomUUID) return global.crypto.randomUUID();
@@ -13,6 +17,7 @@
     return {
       version: 1,
       householdName: "Home",
+      vegasTickerText: "",
       members: [
         { id: uid(), name: "Alex", color: "#5b8def" },
         { id: uid(), name: "Jordan", color: "#6bcf7f" },
@@ -28,14 +33,23 @@
         },
       ],
       meals: {},
+      dayMessages: {},
       shoppingColumns: [[], []],
       weatherLocation: { lat: 40.7128, lon: -74.006, preset: "us-eastern" },
-      uiTheme: "sailor-day",
+      uiTheme: "sailor-moon-prism",
     };
   }
 
   function normalizeHouseholdData(data) {
     if (!data || typeof data !== "object") return data;
+    if (typeof data.vegasTickerText !== "string") data.vegasTickerText = "";
+    data.vegasTickerText = String(data.vegasTickerText || "").trim();
+    if (data.vegasTickerText) {
+      var words = data.vegasTickerText.split(/\s+/).filter(Boolean);
+      if (words.length > 150) {
+        data.vegasTickerText = words.slice(0, 150).join(" ").trim();
+      }
+    }
     if (!Array.isArray(data.shoppingColumns)) data.shoppingColumns = [[], []];
     while (data.shoppingColumns.length < 2) data.shoppingColumns.push([]);
     data.shoppingColumns = data.shoppingColumns.slice(0, 2).map(function (col) {
@@ -61,13 +75,25 @@
     data.weatherLocation = { lat: lat, lon: lon };
     if (preset) data.weatherLocation.preset = preset;
 
+    if (data.uiTheme === "sailor-day") {
+      data.uiTheme = "sailor-moon-prism";
+    }
     if (!data.uiTheme || !THEME_IDS[data.uiTheme]) {
       var fromLs = "";
       try {
         fromLs = global.localStorage.getItem("household-ui-theme") || "";
       } catch (e) {}
-      data.uiTheme = THEME_IDS[fromLs] ? fromLs : "sailor-day";
+      data.uiTheme = THEME_IDS[fromLs] ? fromLs : "sailor-moon-prism";
     }
+
+    if (!data.dayMessages || typeof data.dayMessages !== "object") data.dayMessages = {};
+    var dm = {};
+    Object.keys(data.dayMessages).forEach(function (k) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(k)) return;
+      var t = String(data.dayMessages[k] || "").trim();
+      if (t) dm[k] = t;
+    });
+    data.dayMessages = dm;
 
     if (!data.meals || typeof data.meals !== "object") data.meals = {};
     Object.keys(data.meals).forEach(function (iso) {

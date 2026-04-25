@@ -131,6 +131,19 @@
               <select id="theme-select" aria-label="Interface theme"></select>
             </div>
           </div>
+          <div class="row" style="margin-top: 0.85rem; flex-direction: column; align-items: stretch">
+            <label for="vegas-ticker-input">Vegas TV ticker (optional)</label>
+            <textarea
+              id="vegas-ticker-input"
+              rows="3"
+              placeholder="Custom scrolling message for the Vegas TV theme…"
+              aria-label="Custom scrolling message for Vegas TV theme"
+            ></textarea>
+            <div class="muted" style="display: flex; justify-content: space-between; gap: 0.75rem">
+              <span>Shows only on the Vegas theme. Saved with “Save” in Household.</span>
+              <span id="vegas-ticker-count">0/150 words</span>
+            </div>
+          </div>
         </section>
 
         <section class="card" style="grid-column: 1 / -1">
@@ -161,7 +174,7 @@
           </div>
         </section>
 
-        <section class="card">
+        <section class="card" id="people-section">
           <h2>People</h2>
           <div class="row">
             <input id="member-name" class="edit-on-click" type="text" placeholder="Name" />
@@ -248,7 +261,9 @@
 
         <section class="card" style="grid-column: 1 / -1">
           <h2>Dinner plan (this week)</h2>
-          <p class="muted">Monday-start week, same as the TV board.</p>
+          <p class="muted">
+            Monday-start week, same as the TV board. TV board notes appear on the calendar slide.
+          </p>
           <div id="dinner-week" class="week-editor"></div>
           <button type="button" class="primary" id="btn-save-dinner" style="margin-top: 0.85rem">
             Save dinner

@@ -435,6 +435,18 @@
       inp.className = "edit-on-click";
       col.appendChild(lab);
       col.appendChild(inp);
+      var labMsg = document.createElement("label");
+      labMsg.textContent = "TV board note";
+      labMsg.style.marginTop = "0.45rem";
+      var inpMsg = document.createElement("input");
+      inpMsg.type = "text";
+      inpMsg.placeholder = "Shows on TV calendar week";
+      inpMsg.dataset.dayMessage = iso;
+      inpMsg.value =
+        data.dayMessages && data.dayMessages[iso] ? String(data.dayMessages[iso]) : "";
+      inpMsg.className = "edit-on-click";
+      col.appendChild(labMsg);
+      col.appendChild(inpMsg);
       root.appendChild(col);
     });
   }
@@ -442,6 +454,7 @@
   function saveDinnerFromEditor() {
     var data = HS.load();
     if (!data.meals) data.meals = {};
+    if (!data.dayMessages || typeof data.dayMessages !== "object") data.dayMessages = {};
     var root = $("dinner-week");
     if (!root) return;
     root.querySelectorAll("input[data-date]").forEach(function (inp) {
@@ -457,8 +470,15 @@
         data.meals[iso].dinner = v;
       }
     });
+    root.querySelectorAll("input[data-day-message]").forEach(function (inp) {
+      var iso = inp.getAttribute("data-day-message");
+      if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return;
+      var v = String(inp.value || "").trim();
+      if (!v) delete data.dayMessages[iso];
+      else data.dayMessages[iso] = v;
+    });
     saveLocalAndSync(data);
-    toast("Dinner saved", "ok");
+    toast("Dinner and TV notes saved", "ok");
   }
 
   function renderAll() {
@@ -488,6 +508,9 @@
     if (ts && window.HouseholdThemes && data.uiTheme) {
       ts.value = data.uiTheme;
     }
+    var vt = $("vegas-ticker-input");
+    if (vt) vt.value = String(data.vegasTickerText || "");
+    updateVegasTickerWordCount();
     renderMembers();
     renderEvents();
     renderChores();
@@ -497,6 +520,25 @@
     buildDinnerEditor();
     updateSyncUi();
     lockEditOnClickFields();
+  }
+
+  function updateVegasTickerWordCount() {
+    var el = $("vegas-ticker-input");
+    var out = $("vegas-ticker-count");
+    if (!el || !out) return;
+    var v = String(el.value || "").trim();
+    var words = v ? v.split(/\s+/).filter(Boolean) : [];
+    out.textContent = words.length + "/150 words";
+  }
+
+  function clampVegasTickerTo150Words() {
+    var el = $("vegas-ticker-input");
+    if (!el) return;
+    var raw = String(el.value || "").trim();
+    if (!raw) return;
+    var words = raw.split(/\s+/).filter(Boolean);
+    if (words.length <= 150) return;
+    el.value = words.slice(0, 150).join(" ") + " ";
   }
 
   function lockEditOnClickFields() {
@@ -662,6 +704,10 @@
     $("btn-save-house").addEventListener("click", function () {
       var data = HS.load();
       data.householdName = String($("house-name").value || "").trim() || "Home";
+      if ($("vegas-ticker-input")) {
+        clampVegasTickerTo150Words();
+        data.vegasTickerText = String($("vegas-ticker-input").value || "").trim();
+      }
       var pid = $("weather-preset") ? $("weather-preset").value : "us-eastern";
       if (pid === "custom") {
         var lat = parseFloat(String($("weather-lat").value || "").trim());
@@ -695,6 +741,21 @@
       $("member-name").value = "";
       renderAll();
       toast("Member added", "ok");
+      window.setTimeout(function () {
+        var people = document.getElementById("people-section");
+        var mn = $("member-name");
+        if (people) {
+          people.scrollIntoView({ block: "nearest", behavior: "smooth" });
+        }
+        if (mn) {
+          mn.readOnly = false;
+          try {
+            mn.focus({ preventScroll: true });
+          } catch (e) {
+            mn.focus();
+          }
+        }
+      }, 0);
     });
 
     $("btn-add-event").addEventListener("click", function () {
@@ -805,6 +866,20 @@
         saveLocalAndSync(data);
         toast("Theme: " + window.HouseholdThemes.label(id), "ok");
       });
+    })();
+
+    (function wireVegasTicker() {
+      var el = $("vegas-ticker-input");
+      if (!el || el.dataset.wired) return;
+      el.dataset.wired = "1";
+      el.addEventListener("input", function () {
+        clampVegasTickerTo150Words();
+        updateVegasTickerWordCount();
+      });
+      el.addEventListener("blur", function () {
+        updateVegasTickerWordCount();
+      });
+      updateVegasTickerWordCount();
     })();
 
     $("file-import").addEventListener("change", function (e) {

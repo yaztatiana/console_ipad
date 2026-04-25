@@ -18,6 +18,36 @@
     return document.querySelector(sel);
   }
 
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function hudDateStripHtml(dateLine) {
+    return (
+      '<header class="hud-date-strip" aria-label="Current date">' +
+      '<div class="hud-date-strip__glyph" aria-hidden="true">' +
+      '<span class="hud-hatch"></span>' +
+      '<span class="hud-date-strip__beam"></span>' +
+      "</div>" +
+      '<div class="hud-date-strip__text">' +
+      '<span class="hud-date-strip__kicker">Date and Day</span>' +
+      '<span class="hud-date-strip__value">' +
+      escapeHtml(dateLine) +
+      "</span>" +
+      "</div>" +
+      '<div class="hud-date-strip__circuit" aria-hidden="true">' +
+      '<span class="hud-circuit__nub"></span>' +
+      '<span class="hud-circuit__trace"></span>' +
+      '<span class="hud-circuit__nub"></span>' +
+      "</div>" +
+      "</header>"
+    );
+  }
+
   function fmtTime(d) {
     return d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
   }
@@ -46,10 +76,34 @@
   function renderCalendar(data) {
     var root = $("#slide-calendar .slide__inner");
     if (!root) return;
+    var dateLine = new Date().toLocaleDateString(undefined, {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+    root.className = "slide__inner slide__inner--hud slide__inner--calendar";
+    root.innerHTML =
+      '<div class="schedule-hud">' +
+      hudDateStripHtml(dateLine) +
+      '<div class="schedule-hud__row schedule-hud__row--full">' +
+      '<section class="hud-frame hud-frame--schedule hud-frame--calendar-board" aria-label="Calendar week">' +
+      '<div class="hud-frame__tri" aria-hidden="true"></div>' +
+      '<div class="hud-frame__dots" aria-hidden="true">' +
+      "<span></span><span></span><span></span><span></span><span></span>" +
+      "</div>" +
+      '<h2 class="hud-frame__title">This week</h2>' +
+      '<div class="hud-frame__body hud-frame__body--calendar">' +
+      '<div class="week week--hud" id="week"></div>' +
+      "</div>" +
+      '<div class="hud-frame__tab" aria-hidden="true"></div>' +
+      "</section>" +
+      "</div>" +
+      "</div>";
     var days = HC.weekDates(new Date());
     var events = data.events || [];
-    root.innerHTML =
-      '<div class="slide__label">This week</div><div class="week" id="week"></div>';
+    var dayMessages =
+      data.dayMessages && typeof data.dayMessages === "object" ? data.dayMessages : {};
     var week = $("#week");
     var todayISO = HC.toISODate(new Date());
     days.forEach(function (d) {
@@ -89,6 +143,13 @@
           }
           stack.appendChild(evEl);
         });
+      var noteText = dayMessages[iso];
+      if (noteText && String(noteText).trim()) {
+        var msgEl = document.createElement("div");
+        msgEl.className = "day__msg";
+        msgEl.textContent = String(noteText).trim();
+        stack.appendChild(msgEl);
+      }
       week.appendChild(col);
     });
   }
@@ -121,23 +182,28 @@
   function renderChoresAndDinner(data) {
     var root = $("#slide-chores-dinner .slide__inner");
     if (!root) return;
-    root.className = "slide__inner slide__inner--split";
-    root.innerHTML = "";
-    var title = document.createElement("div");
-    title.className = "slide__label";
-    title.textContent = "Chores & dinner";
-    root.appendChild(title);
-    var split = document.createElement("div");
-    split.className = "chores-dinner-split";
-    var left = document.createElement("div");
-    left.className = "chores-dinner-split__col chores-dinner-split__col--chores";
-    var subL = document.createElement("div");
-    subL.className = "chores-dinner-split__sub";
-    subL.textContent = "Chores";
-    left.appendChild(subL);
-    var box = document.createElement("div");
-    box.className = "chores";
-    box.id = "tv-chores";
+    var dateLine = new Date().toLocaleDateString(undefined, {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+    root.className = "slide__inner slide__inner--hud slide__inner--split";
+    root.innerHTML =
+      '<div class="schedule-hud">' +
+      hudDateStripHtml(dateLine) +
+      '<div class="schedule-hud__row schedule-hud__row--split">' +
+      '<section class="hud-frame hud-frame--split-tile" aria-label="Chores">' +
+      '<h2 class="hud-frame__title">Chores</h2>' +
+      '<div class="hud-frame__body"><div class="chores chores--hud" id="tv-chores"></div></div>' +
+      "</section>" +
+      '<section class="hud-frame hud-frame--split-tile" aria-label="Dinner">' +
+      '<h2 class="hud-frame__title">Dinner this week</h2>' +
+      '<div class="hud-frame__body"><div class="dinner-grid dinner-grid--embed dinner-grid--hud" id="tv-dinner-grid"></div></div>' +
+      "</section>" +
+      "</div>" +
+      "</div>";
+    var box = $("#tv-chores");
     var chores = data.chores || [];
     if (!chores.length) {
       var empty = document.createElement("div");
@@ -183,17 +249,9 @@
         box.appendChild(row);
       });
     }
-    left.appendChild(box);
-    var right = document.createElement("div");
-    right.className = "chores-dinner-split__col chores-dinner-split__col--dinner";
-    var subR = document.createElement("div");
-    subR.className = "chores-dinner-split__sub";
-    subR.textContent = "Dinner this week";
-    right.appendChild(subR);
+    var grid = $("#tv-dinner-grid");
     var days = HC.weekDates(new Date());
     var meals = data.meals || {};
-    var grid = document.createElement("div");
-    grid.className = "dinner-grid dinner-grid--embed";
     days.forEach(function (d) {
       var hd = document.createElement("div");
       hd.className = "dinner-grid__hd";
@@ -207,18 +265,6 @@
       cell.textContent = (meals[iso] && meals[iso].dinner) || "—";
       grid.appendChild(cell);
     });
-    right.appendChild(grid);
-    split.appendChild(left);
-    split.appendChild(right);
-    root.appendChild(split);
-  }
-
-  function escapeHtml(s) {
-    return String(s)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
   }
 
   function wmoDescription(code) {
@@ -235,35 +281,52 @@
     return "Weather";
   }
 
-  function updateTodayWeatherEl() {
-    var el = $("#today-weather");
-    if (!el) return;
-    if (weatherState.err) {
-      el.textContent = weatherState.err;
-      return;
-    }
-    var j = weatherState.data;
-    if (!j || !j.current) {
-      el.textContent = "Loading weather…";
-      return;
-    }
-    var cur = j.current;
-    var t = cur.temperature_2m;
-    var feel = cur.apparent_temperature;
-    var desc = wmoDescription(cur.weather_code);
-    var big = t != null && !Number.isNaN(Number(t)) ? Math.round(Number(t)) + "°" : "—";
-    var feelLine =
-      feel != null && !Number.isNaN(Number(feel))
-        ? '<div class="today-weather__feel">Feels like ' + Math.round(Number(feel)) + "°</div>"
-        : "";
-    el.innerHTML =
-      '<div class="today-weather__big">' +
-      big +
-      "</div>" +
-      '<div class="today-weather__desc">' +
-      escapeHtml(desc) +
-      "</div>" +
-      feelLine;
+  function updateScheduleWeatherSlots() {
+    document.querySelectorAll(".schedule-day[data-iso]").forEach(function (pane) {
+      var slot = pane.querySelector(".schedule-day__weather");
+      if (!slot) return;
+      var iso = pane.getAttribute("data-iso");
+      if (weatherState.err) {
+        slot.textContent = weatherState.err;
+        return;
+      }
+      var j = weatherState.data;
+      if (!j) {
+        slot.innerHTML = '<span class="schedule-day__wx-muted">Loading weather…</span>';
+        return;
+      }
+      var daily = j.daily;
+      var times = daily && daily.time;
+      var tmax = daily && daily.temperature_2m_max;
+      var tmin = daily && daily.temperature_2m_min;
+      var codes = daily && daily.weather_code;
+      if (!times || !times.length) {
+        slot.innerHTML = '<span class="schedule-day__wx-muted">Loading weather…</span>';
+        return;
+      }
+      var idx = times.indexOf(iso);
+      if (idx < 0) {
+        slot.innerHTML = '<span class="schedule-day__wx-muted">—</span>';
+        return;
+      }
+      var hi = tmax && tmax[idx];
+      var lo = tmin && tmin[idx];
+      var code = codes && codes[idx];
+      var hiStr =
+        hi != null && !Number.isNaN(Number(hi)) ? Math.round(Number(hi)) + "°" : "—";
+      var loStr =
+        lo != null && !Number.isNaN(Number(lo)) ? Math.round(Number(lo)) + "°" : "";
+      var line =
+        loStr && loStr !== hiStr ? hiStr + " / " + loStr : hiStr;
+      var desc = code != null ? wmoDescription(code) : "";
+      slot.innerHTML =
+        '<div class="schedule-day__wx-temp">' +
+        escapeHtml(line) +
+        "</div>" +
+        (desc
+          ? '<div class="schedule-day__wx-desc">' + escapeHtml(desc) + "</div>"
+          : "");
+    });
   }
 
   function fetchOpenMeteo(loc) {
@@ -272,7 +335,10 @@
       encodeURIComponent(loc.lat) +
       "&longitude=" +
       encodeURIComponent(loc.lon) +
-      "&current=temperature_2m,apparent_temperature,weather_code&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto";
+      "&current=temperature_2m,apparent_temperature,weather_code" +
+      "&daily=weather_code,temperature_2m_max,temperature_2m_min" +
+      "&forecast_days=7" +
+      "&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto";
     return fetch(url).then(function (r) {
       if (!r.ok) throw new Error("weather");
       return r.json();
@@ -288,134 +354,248 @@
       weatherState.key === key &&
       now - weatherState.at < WEATHER_TTL_MS
     ) {
-      updateTodayWeatherEl();
+      updateScheduleWeatherSlots();
       return;
     }
     weatherState.err = null;
     if (weatherState.key !== key) {
       weatherState.data = null;
     }
-    updateTodayWeatherEl();
+    updateScheduleWeatherSlots();
     fetchOpenMeteo(loc).then(
       function (j) {
         weatherState.at = Date.now();
         weatherState.key = key;
         weatherState.data = j;
         weatherState.err = null;
-        updateTodayWeatherEl();
+        updateScheduleWeatherSlots();
       },
       function () {
         weatherState.at = Date.now();
         weatherState.key = key;
         weatherState.data = null;
         weatherState.err = "Weather unavailable.";
-        updateTodayWeatherEl();
+        updateScheduleWeatherSlots();
       }
     );
   }
 
-  function renderToday(data) {
-    var root = $("#slide-today .slide__inner");
-    if (!root) return;
-    var today = new Date();
-    var todayISO = HC.toISODate(today);
-    var head = today.toLocaleDateString(undefined, {
+  function renderScheduleColumn(data, dayDate, todayISO) {
+    var iso = HC.toISODate(dayDate);
+    var isTodayCol = iso === todayISO;
+    var headLine = dayDate.toLocaleDateString(undefined, {
       weekday: "long",
+      month: "short",
+      day: "numeric",
+    });
+    var events = (data.events || [])
+      .filter(function (ev) {
+        var t = HC.parseISO(ev.start);
+        return t && HC.sameDay(t, dayDate);
+      })
+      .sort(function (a, b) {
+        return String(a.start).localeCompare(String(b.start));
+      });
+    var evHtml = "";
+    if (!events.length) {
+      evHtml = '<div class="schedule-day__empty">Nothing scheduled.</div>';
+    } else {
+      evHtml = events
+        .map(function (ev) {
+          var t = HC.parseISO(ev.start);
+          var timeStr = t ? fmtTime(t) : "";
+          var chip = (ev.memberIds && ev.memberIds[0]) || null;
+          var col = memberColor(data, chip);
+          return (
+            '<div class="schedule-day__ev" style="--chip:' +
+            col +
+            '"><span class="schedule-day__ev-title">' +
+            escapeHtml(ev.title || "Event") +
+            "</span>" +
+            (timeStr
+              ? '<time class="schedule-day__ev-time">' + escapeHtml(timeStr) + "</time>"
+              : "") +
+            "</div>"
+          );
+        })
+        .join("");
+    }
+    return (
+      '<div class="schedule-day' +
+      (isTodayCol ? " is-today" : "") +
+      '" data-iso="' +
+      escapeHtml(iso) +
+      '">' +
+      '<div class="schedule-day__hd">' +
+      escapeHtml(headLine) +
+      (isTodayCol ? '<span class="schedule-day__badge">Today</span>' : "") +
+      "</div>" +
+      '<div class="schedule-day__section-h">Weather</div>' +
+      '<div class="schedule-day__weather"><span class="schedule-day__wx-muted">Loading weather…</span></div>' +
+      '<div class="schedule-day__section-h">Events</div>' +
+      '<div class="schedule-day__events">' +
+      evHtml +
+      "</div>" +
+      "</div>"
+    );
+  }
+
+  function choreSortScore(c, daysThree) {
+    if (typeof c.dueWeekday !== "number") return 15;
+    var i;
+    for (i = 0; i < daysThree.length; i++) {
+      if (daysThree[i].getDay() === c.dueWeekday) return i;
+    }
+    return 30 + c.dueWeekday;
+  }
+
+  function renderScheduleChoresSidebar(data, daysThree) {
+    var list = (data.chores || []).filter(function (c) {
+      return !c.done;
+    });
+    list.sort(function (a, b) {
+      var sa = choreSortScore(a, daysThree);
+      var sb = choreSortScore(b, daysThree);
+      if (sa !== sb) return sa - sb;
+      return String(a.title || "").localeCompare(String(b.title || ""));
+    });
+    if (!list.length) {
+      return '<div class="schedule-chores-sidebar__empty">All caught up.</div>';
+    }
+    return list
+      .map(function (c) {
+        var assign =
+          c.assigneeId && HS.memberById(data, c.assigneeId)
+            ? HS.memberById(data, c.assigneeId).name
+            : "Anyone";
+        var due =
+          typeof c.dueWeekday === "number"
+            ? weekdayNames[c.dueWeekday] || "Any day"
+            : "Any day";
+        return (
+          '<div class="schedule-chores-sidebar__row">' +
+          '<span class="schedule-chores-sidebar__t">' +
+          escapeHtml(c.title || "Chore") +
+          "</span>" +
+          '<span class="schedule-chores-sidebar__meta">' +
+          escapeHtml(assign + " · " + due) +
+          "</span></div>"
+        );
+      })
+      .join("");
+  }
+
+  function renderSchedule(data) {
+    var root = $("#slide-schedule .slide__inner");
+    if (!root) return;
+    root.className = "slide__inner slide__inner--hud slide__inner--schedule";
+    var anchor = new Date();
+    anchor.setHours(12, 0, 0, 0);
+    var todayISO = HC.toISODate(new Date());
+    var daysThree = [0, 1, 2].map(function (i) {
+      return HC.addDays(anchor, i);
+    });
+    var cols = daysThree.map(function (d) {
+      return renderScheduleColumn(data, d, todayISO);
+    });
+    var dateLine = new Date().toLocaleDateString(undefined, {
+      weekday: "long",
+      year: "numeric",
       month: "long",
       day: "numeric",
     });
-    var events = (data.events || []).filter(function (ev) {
-      var t = HC.parseISO(ev.start);
-      return t && HC.sameDay(t, today);
-    });
-    events.sort(function (a, b) {
-      return String(a.start).localeCompare(String(b.start));
-    });
-    var dinnerStr =
-      (data.meals && data.meals[todayISO] && data.meals[todayISO].dinner) || "";
-    var wd = today.getDay();
-    var choresOpen = (data.chores || []).filter(function (c) {
-      return !c.done;
-    });
-    choresOpen.sort(function (a, b) {
-      var da =
-        typeof a.dueWeekday === "number" && a.dueWeekday === wd ? 0 : 1;
-      var db =
-        typeof b.dueWeekday === "number" && b.dueWeekday === wd ? 0 : 1;
-      if (da !== db) return da - db;
-      return String(a.title || "").localeCompare(String(b.title || ""));
-    });
+    var choresHtml = renderScheduleChoresSidebar(data, daysThree);
     root.innerHTML =
-      '<div class="today-dash">' +
-      '<div class="today-dash__head">' +
-      escapeHtml(head) +
+      '<div class="schedule-hud">' +
+      hudDateStripHtml(dateLine) +
+      '<div class="schedule-hud__row">' +
+      '<section class="hud-frame hud-frame--schedule" aria-label="Three day schedule">' +
+      '<div class="hud-frame__tri" aria-hidden="true"></div>' +
+      '<div class="hud-frame__dots" aria-hidden="true">' +
+      "<span></span><span></span><span></span><span></span><span></span>" +
       "</div>" +
-      '<div class="today-dash__grid">' +
-      '<div class="today-pane today-pane--weather"><div class="today-pane__label">Weather</div><div id="today-weather" class="today-pane__body">…</div></div>' +
-      '<div class="today-pane today-pane--events"><div class="today-pane__label">Today\x27s events</div><div id="today-events" class="today-pane__body"></div></div>' +
-      '<div class="today-pane today-pane--dinner"><div class="today-pane__label">Dinner</div><div id="today-dinner" class="today-pane__body"></div></div>' +
-      '<div class="today-pane today-pane--chores"><div class="today-pane__label">Chores to do</div><div id="today-chores" class="today-pane__body"></div></div>' +
-      "</div></div>";
-
-    var evBox = $("#today-events");
-    if (evBox) {
-      if (!events.length) {
-        evBox.innerHTML = '<div class="today-empty">Nothing on the calendar.</div>';
-      } else {
-        evBox.innerHTML = events
-          .map(function (ev) {
-            var t = HC.parseISO(ev.start);
-            var timeStr = t ? fmtTime(t) : "";
-            var chip = (ev.memberIds && ev.memberIds[0]) || null;
-            var col = memberColor(data, chip);
-            return (
-              '<div class="today-ev" style="--chip:' +
-              col +
-              '"><strong>' +
-              escapeHtml(ev.title || "Event") +
-              "</strong>" +
-              (timeStr
-                ? '<time class="today-ev__time">' + escapeHtml(timeStr) + "</time>"
-                : "") +
-              "</div>"
-            );
-          })
-          .join("");
-      }
-    }
-    var din = $("#today-dinner");
-    if (din) {
-      din.innerHTML = dinnerStr
-        ? '<div class="today-dinner__line">' + escapeHtml(dinnerStr) + "</div>"
-        : '<div class="today-empty">No dinner planned yet.</div>';
-    }
-    var chBox = $("#today-chores");
-    if (chBox) {
-      if (!choresOpen.length) {
-        chBox.innerHTML = '<div class="today-empty">All caught up.</div>';
-      } else {
-        chBox.innerHTML = choresOpen
-          .map(function (c) {
-            var assign =
-              c.assigneeId && HS.memberById(data, c.assigneeId)
-                ? HS.memberById(data, c.assigneeId).name
-                : "Anyone";
-            var due =
-              typeof c.dueWeekday === "number"
-                ? weekdayNames[c.dueWeekday] || "Any day"
-                : "Any day";
-            return (
-              '<div class="today-chore"><div class="today-chore__t">' +
-              escapeHtml(c.title || "Chore") +
-              '</div><div class="today-chore__m">' +
-              escapeHtml(assign + " · due " + due) +
-              "</div></div>"
-            );
-          })
-          .join("");
-      }
-    }
+      '<h2 class="hud-frame__title">3 day schedule</h2>' +
+      '<div class="hud-frame__body schedule-3__cols">' +
+      cols.join("") +
+      "</div>" +
+      '<div class="hud-frame__tab" aria-hidden="true"></div>' +
+      "</section>" +
+      '<aside class="hud-frame hud-frame--chores" aria-label="Chores">' +
+      '<div class="hud-frame__ribs hud-frame__ribs--left" aria-hidden="true"></div>' +
+      '<h2 class="hud-frame__title">Chores</h2>' +
+      '<div class="hud-frame__body schedule-chores-sidebar">' +
+      choresHtml +
+      "</div>" +
+      '<div class="hud-frame__foot" aria-hidden="true"></div>' +
+      "</aside>" +
+      "</div>" +
+      "</div>";
     refreshWeatherIfNeeded(data);
+  }
+
+  function renderShopping(data) {
+    var root = $("#slide-shopping .slide__inner");
+    if (!root) return;
+    var dateLine = new Date().toLocaleDateString(undefined, {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+    root.className = "slide__inner slide__inner--hud slide__inner--shopping";
+    var cols = data.shoppingColumns || [[], []];
+    var labels = ["List 1", "List 2"];
+    var parts = [];
+    var c;
+    for (c = 0; c < 2; c++) {
+      var items = cols[c] || [];
+      var lines = [];
+      var any = false;
+      items.forEach(function (it) {
+        if (!it) return;
+        var tx = String(it.text || "").trim();
+        if (!tx) return;
+        any = true;
+        var ck = it.checked ? " shopping-tv__item--checked" : "";
+        lines.push(
+          '<li class="shopping-tv__item' +
+            ck +
+            '"><span class="shopping-tv__check" aria-hidden="true"></span>' +
+            escapeHtml(tx) +
+            "</li>"
+        );
+      });
+      if (!any) {
+        lines.push('<li class="shopping-tv__empty">No items yet</li>');
+      }
+      parts.push(
+        '<div class="shopping-tv__col">' +
+          '<div class="shopping-tv__hd">' +
+          escapeHtml(labels[c]) +
+          "</div>" +
+          '<ul class="shopping-tv__list">' +
+          lines.join("") +
+          "</ul></div>"
+      );
+    }
+    root.innerHTML =
+      '<div class="schedule-hud">' +
+      hudDateStripHtml(dateLine) +
+      '<div class="schedule-hud__row schedule-hud__row--full">' +
+      '<section class="hud-frame hud-frame--schedule hud-frame--calendar-board hud-frame--shopping-board" aria-label="Shopping lists">' +
+      '<div class="hud-frame__tri" aria-hidden="true"></div>' +
+      '<div class="hud-frame__dots" aria-hidden="true">' +
+      "<span></span><span></span><span></span><span></span><span></span>" +
+      "</div>" +
+      '<h2 class="hud-frame__title">Shopping lists</h2>' +
+      '<div class="hud-frame__body hud-frame__body--shopping">' +
+      '<div class="shopping-tv__grid">' +
+      parts.join("") +
+      "</div></div>" +
+      '<div class="hud-frame__tab" aria-hidden="true"></div>' +
+      "</section>" +
+      "</div>" +
+      "</div>";
   }
 
   function renderAll() {
@@ -426,9 +606,20 @@
     var name = data.householdName || "Home";
     var ht = $("#houseName");
     if (ht) ht.textContent = name;
-    renderToday(data);
+    renderVegasTicker(data);
+    renderSchedule(data);
     renderCalendar(data);
     renderChoresAndDinner(data);
+    renderShopping(data);
+  }
+
+  function renderVegasTicker(data) {
+    var el = document.getElementById("vegas-ticker-text");
+    if (!el) return;
+    var isVegas = data && data.uiTheme === "vegas-street";
+    var txt = isVegas ? String(data.vegasTickerText || "").trim() : "";
+    el.textContent = txt;
+    document.body.classList.toggle("has-vegas-ticker", !!txt && isVegas);
   }
 
   function setSlide(i) {

@@ -2,15 +2,15 @@
   "use strict";
 
   var STORAGE_KEY = "household-ui-theme";
-  var DEFAULT = "sailor-day";
+  var DEFAULT = "sailor-moon-prism";
   var VALID = {
-    "sailor-day": 1,
+    "sailor-moon-prism": 1,
     "academia-night": 1,
     "vegas-street": 1,
   };
 
   var LABELS = {
-    "sailor-day": "Pastel moon (day)",
+    "sailor-moon-prism": "Moon Prism Power",
     "academia-night": "Dark academia (night)",
     "vegas-street": "Vegas street",
   };

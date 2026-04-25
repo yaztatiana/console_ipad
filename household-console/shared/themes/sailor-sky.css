@@ -1,11 +1,11 @@
-/* Floating moon + stars — only visible for sailor-day theme */
+/* Floating moon + stars — Moon Prism Power (and pre-JS :not([data-theme]) paint) */
 .sailor-sky {
   display: none;
   pointer-events: none;
   overflow: hidden;
 }
 
-html[data-theme="sailor-day"] .sailor-sky,
+html[data-theme="sailor-moon-prism"] .sailor-sky,
 html:not([data-theme]) .sailor-sky {
   display: block;
 }

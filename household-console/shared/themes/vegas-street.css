@@ -160,8 +160,68 @@ html[data-theme="vegas-street"] .graffiti-burst--gold {
 
 /* Keep main content clear of fixed rails */
 html[data-theme="vegas-street"] body.tv-tenfoot {
-  padding-top: var(--graffiti-rail-h);
-  padding-bottom: var(--graffiti-rail-h);
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+/* TV: remove the old top banner, replace with a ticker */
+html[data-theme="vegas-street"] body.tv-tenfoot .graffiti-rail--bottom {
+  display: none;
+}
+
+html[data-theme="vegas-street"] body.tv-tenfoot .graffiti-rail--top {
+  border-bottom: none;
+  box-shadow: none;
+  background: transparent;
+}
+
+html[data-theme="vegas-street"] body.tv-tenfoot .graffiti-rail__inner {
+  min-height: clamp(1.35rem, 2.35vw, 1.85rem);
+  padding: 0.15rem 0.6rem;
+  background: linear-gradient(180deg, rgba(8, 6, 14, 0.55), rgba(8, 6, 14, 0));
+  justify-content: flex-start;
+}
+
+html[data-theme="vegas-street"] body.tv-tenfoot .graffiti-rail--top .graffiti-burst {
+  display: none;
+}
+
+html[data-theme="vegas-street"] body.tv-tenfoot .vegas-ticker {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  opacity: 0.95;
+}
+
+html[data-theme="vegas-street"] body.tv-tenfoot .vegas-ticker__text {
+  display: inline-block;
+  white-space: nowrap;
+  will-change: transform;
+  font-family: var(--font-display);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-size: clamp(0.9rem, 1.75vw, 1.25rem);
+  color: #00fff2;
+  text-shadow: 0 0 18px rgba(0, 245, 255, 0.45), 0 0 38px rgba(255, 26, 140, 0.18);
+  transform: translateX(110%);
+  animation: vegas-ticker-marquee 22s linear infinite;
+}
+
+html[data-theme="vegas-street"] body.tv-tenfoot:not(.has-vegas-ticker) .vegas-ticker__text {
+  animation: none;
+}
+
+html[data-theme="vegas-street"] body.tv-tenfoot.has-vegas-ticker .vegas-ticker__text {
+  animation-play-state: running;
+}
+
+@keyframes vegas-ticker-marquee {
+  0% {
+    transform: translateX(110%);
+  }
+  100% {
+    transform: translateX(-110%);
+  }
 }
 
 html[data-theme="vegas-street"] body:not(.tv-tenfoot) {
