@@ -28,6 +28,36 @@ body::before {
     linear-gradient(180deg, var(--manage-fade-top) 0%, var(--ink) 42%);
 }
 
+.js-status {
+  position: fixed;
+  left: 0.75rem;
+  top: 0.75rem;
+  z-index: 99;
+  padding: 0.35rem 0.55rem;
+  border-radius: 10px;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  border: 1px solid var(--line);
+  background: rgba(0, 0, 0, 0.55);
+  color: var(--text);
+  pointer-events: none;
+  opacity: 0.9;
+}
+
+.js-status--on {
+  display: none;
+}
+
+.js-status--err {
+  display: block;
+  pointer-events: auto;
+  background: rgba(40, 0, 12, 0.78);
+  border-color: rgba(255, 123, 156, 0.55);
+  color: #fff1f5;
+  max-width: min(760px, calc(100% - 1.5rem));
+  white-space: pre-wrap;
+}
+
 a {
   color: var(--sky);
   text-decoration: none;

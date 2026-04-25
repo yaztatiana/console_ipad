@@ -1,6 +1,26 @@
 (function () {
   "use strict";
 
+  (function installFatalHandler() {
+    function setStatus(kind, text) {
+      var el = document.getElementById("js-status");
+      if (!el) return;
+      el.className = "js-status js-status--" + kind;
+      el.textContent = text || "";
+    }
+    window.addEventListener("error", function (e) {
+      var msg = e && e.message ? String(e.message) : "Unknown error";
+      setStatus("err", "JS error:\n" + msg);
+    });
+    window.addEventListener("unhandledrejection", function (e) {
+      var r = e && e.reason ? e.reason : null;
+      var msg = r && r.message ? String(r.message) : String(r || "Unknown rejection");
+      setStatus("err", "JS rejected:\n" + msg);
+    });
+    // If we run at all, mark as on. If something fails later, handler flips to err.
+    setStatus("on", "");
+  })();
+
   var HC = window.HouseholdCalendar;
   var HS = window.HouseholdStore;
   var HSync = window.HouseholdSync;
