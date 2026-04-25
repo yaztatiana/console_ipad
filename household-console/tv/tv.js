@@ -618,8 +618,9 @@
     if (!el) return;
     var isVegas = data && data.uiTheme === "vegas-street";
     var txt = isVegas ? String(data.vegasTickerText || "").trim() : "";
+    if (isVegas && !txt) txt = "Welcome home, leave a message for us";
     el.textContent = txt;
-    document.body.classList.toggle("has-vegas-ticker", !!txt && isVegas);
+    document.body.classList.toggle("has-vegas-ticker", isVegas);
   }
 
   function setSlide(i) {

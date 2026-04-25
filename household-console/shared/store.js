@@ -17,7 +17,7 @@
     return {
       version: 1,
       householdName: "Home",
-      vegasTickerText: "",
+      vegasTickerText: "Welcome home, leave a message for us",
       members: [
         { id: uid(), name: "Alex", color: "#5b8def" },
         { id: uid(), name: "Jordan", color: "#6bcf7f" },
@@ -42,8 +42,11 @@
 
   function normalizeHouseholdData(data) {
     if (!data || typeof data !== "object") return data;
-    if (typeof data.vegasTickerText !== "string") data.vegasTickerText = "";
+    if (typeof data.vegasTickerText !== "string") {
+      data.vegasTickerText = "Welcome home, leave a message for us";
+    }
     data.vegasTickerText = String(data.vegasTickerText || "").trim();
+    if (!data.vegasTickerText) data.vegasTickerText = "Welcome home, leave a message for us";
     if (data.vegasTickerText) {
       var words = data.vegasTickerText.split(/\s+/).filter(Boolean);
       if (words.length > 150) {
