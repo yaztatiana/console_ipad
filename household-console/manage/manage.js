@@ -101,53 +101,6 @@
     for (i = 0; i < arr.length; i++) fn(arr[i], i);
   }
 
-  /** Click target may be a <label>; readOnly unlock must still find the paired input. */
-  function resolveEditOnClickInput(target) {
-    var el = target;
-    if (!el) return null;
-    if (el.nodeType !== 1) el = el.parentElement;
-    if (!el) return null;
-    if (el.tagName === "INPUT" && el.classList && el.classList.contains("edit-on-click")) {
-      return el;
-    }
-    if (el.tagName === "LABEL") {
-      if (el.htmlFor) {
-        var byId = document.getElementById(el.htmlFor);
-        if (
-          byId &&
-          byId.tagName === "INPUT" &&
-          byId.classList &&
-          byId.classList.contains("edit-on-click")
-        ) {
-          return byId;
-        }
-      }
-      var inner = el.querySelector ? el.querySelector("input.edit-on-click") : null;
-      if (inner) return inner;
-    }
-    var p = el;
-    var depth = 0;
-    while (p && p.nodeType === 1 && depth < 10) {
-      if (p.tagName === "INPUT" && p.classList && p.classList.contains("edit-on-click")) {
-        return p;
-      }
-      if (p.tagName === "LABEL" && p.htmlFor) {
-        var inp = document.getElementById(p.htmlFor);
-        if (
-          inp &&
-          inp.tagName === "INPUT" &&
-          inp.classList &&
-          inp.classList.contains("edit-on-click")
-        ) {
-          return inp;
-        }
-      }
-      p = p.parentElement;
-      depth++;
-    }
-    return null;
-  }
-
   function onClick(id, handler) {
     var el = $(id);
     if (!el) return;
@@ -513,7 +466,6 @@
       inp.dataset.meal = "dinner";
       var cur = (data.meals && data.meals[iso] && data.meals[iso].dinner) || "";
       inp.value = cur;
-      inp.className = "edit-on-click";
       col.appendChild(lab);
       col.appendChild(inp);
       var labMsg = document.createElement("label");
@@ -525,7 +477,6 @@
       inpMsg.dataset.dayMessage = iso;
       inpMsg.value =
         data.dayMessages && data.dayMessages[iso] ? String(data.dayMessages[iso]) : "";
-      inpMsg.className = "edit-on-click";
       col.appendChild(labMsg);
       col.appendChild(inpMsg);
       root.appendChild(col);
@@ -600,13 +551,22 @@
     refreshMemberSelects();
     buildDinnerEditor();
     updateSyncUi();
-    lockEditOnClickFields();
     var boot = $("js-status");
     if (boot && !boot.dataset.appReady) {
       boot.dataset.appReady = "1";
       boot.className = "js-status js-status--ok";
-      boot.textContent =
-        "Manage ready — tap a field or its label to edit (TV: use remote OK on the input).";
+      boot.textContent = "Manage ready.";
+      boot.style.visibility = "";
+      boot.removeAttribute("aria-hidden");
+      if (!boot.dataset.bootHideScheduled) {
+        boot.dataset.bootHideScheduled = "1";
+        window.setTimeout(function () {
+          if (!boot.classList.contains("js-status--err")) {
+            boot.style.visibility = "hidden";
+            boot.setAttribute("aria-hidden", "true");
+          }
+        }, 2200);
+      }
     }
   }
 
@@ -629,53 +589,58 @@
     el.value = words.slice(0, 150).join(" ") + " ";
   }
 
-  function lockEditOnClickFields() {
+  /** TV / keyboard: ArrowDown / ArrowUp move focus between controls (skips select so arrow keys still change options). */
+  function wireArrowFocusNavigation() {
     var root = document.querySelector(".wrap");
-    if (!root) return;
-    forEachNode(root.querySelectorAll("input.edit-on-click"), function (el) {
-      el.readOnly = true;
-    });
-  }
-
-  function wireEditOnClickDelegation() {
-    var root = document.querySelector(".wrap");
-    if (!root || root.dataset.editOnClickWired) return;
-    root.dataset.editOnClickWired = "1";
-    root.addEventListener(
-      "click",
-      function (e) {
-        var el = resolveEditOnClickInput(e.target);
-        if (el && el.readOnly) {
-          el.readOnly = false;
-          try {
-            el.focus({ preventScroll: true });
-          } catch (err) {
-            el.focus();
-          }
+    if (!root || root.dataset.arrowNavWired) return;
+    root.dataset.arrowNavWired = "1";
+    function listFocusables() {
+      var sel =
+        "button:not([disabled])," +
+        "input:not([disabled]):not([type=hidden])," +
+        "select:not([disabled])," +
+        "textarea:not([disabled])," +
+        "a[href]";
+      return Array.prototype.slice.call(root.querySelectorAll(sel)).filter(function (n) {
+        if (n.tagName === "INPUT" && String(n.getAttribute("type") || "").toLowerCase() === "file") {
+          return false;
         }
-      },
-      true
-    );
+        var r = n.getBoundingClientRect();
+        return r.width > 0 && r.height > 0;
+      });
+    }
     root.addEventListener(
       "keydown",
       function (e) {
+        if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
         var el = e.target;
-        if (!el || el.tagName !== "INPUT" || !el.classList || !el.classList.contains("edit-on-click")) {
-          return;
+        if (!el || !root.contains(el)) return;
+        if (el.tagName === "SELECT" || el.tagName === "TEXTAREA") return;
+        if (el.tagName === "INPUT") {
+          var ty = String(el.getAttribute("type") || "text").toLowerCase();
+          if (ty === "checkbox" || ty === "radio") return;
         }
-        if (el.readOnly && (e.key === "Enter" || e.key === " ")) {
-          e.preventDefault();
-          el.readOnly = false;
+        var list = listFocusables();
+        var idx = -1;
+        var i;
+        for (i = 0; i < list.length; i++) {
+          if (list[i] === el) {
+            idx = i;
+            break;
+          }
         }
-      },
-      true
-    );
-    root.addEventListener(
-      "blur",
-      function (e) {
-        var el = e.target;
-        if (el.matches && el.matches("input.edit-on-click")) {
-          el.readOnly = true;
+        if (idx < 0) return;
+        var next = e.key === "ArrowDown" ? idx + 1 : idx - 1;
+        if (next < 0 || next >= list.length) return;
+        var n = list[next];
+        var r = n.getBoundingClientRect();
+        if (!r.width && !r.height) return;
+        e.preventDefault();
+        try {
+          n.focus({ preventScroll: true });
+        } catch (err) {
+          n.focus();
         }
       },
       true
@@ -747,7 +712,7 @@
   }
 
   function wire() {
-    wireEditOnClickDelegation();
+    wireArrowFocusNavigation();
     wireWeatherUi();
     var ski = $("sync-key-input");
     if (ski) ski.value = HSync.getLocalSyncKey() || "";
@@ -843,7 +808,6 @@
           people.scrollIntoView({ block: "nearest", behavior: "smooth" });
         }
         if (mn) {
-          mn.readOnly = false;
           try {
             mn.focus({ preventScroll: true });
           } catch (e) {
