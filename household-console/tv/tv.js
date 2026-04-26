@@ -281,11 +281,14 @@
     var k = e.key;
     if (k !== "Enter" && k !== " ") return;
     var t = e.target;
-    if (!t || !t.getAttribute) return;
-    var id = t.getAttribute("data-chore-id");
-    if (!id) return;
-    e.preventDefault();
-    toggleChoreById(id);
+    while (t && t !== document.body) {
+      if (t && t.getAttribute && t.getAttribute("data-chore-id")) {
+        e.preventDefault();
+        toggleChoreById(t.getAttribute("data-chore-id"));
+        return;
+      }
+      t = t.parentNode;
+    }
   }
 
   function armRotate() {
