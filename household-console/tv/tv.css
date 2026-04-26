@@ -20,6 +20,44 @@ body.tv-body {
   min-height: 100dvh;
 }
 
+.tv-banner {
+  flex-shrink: 0;
+  height: 2.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(96, 165, 250, 0.12);
+  overflow: hidden;
+  display: none;
+}
+
+.tv-banner.is-on {
+  display: block;
+}
+
+.tv-banner-track {
+  height: 100%;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  will-change: transform;
+  animation: tv-marquee 22s linear infinite;
+}
+
+.tv-banner-text {
+  padding: 0 2.5rem;
+  font-size: clamp(0.95rem, 2.2vw, 1.2rem);
+  font-weight: 600;
+  color: rgba(238, 242, 255, 0.92);
+}
+
+@keyframes tv-marquee {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
 .tv-header {
   display: flex;
   align-items: center;
@@ -212,6 +250,34 @@ body.tv-body {
   background: rgba(96, 165, 250, 0.08);
   border-radius: 12px;
   padding: clamp(0.45rem, 1.5vw, 0.75rem);
+}
+
+.chore-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.15rem 0.1rem;
+}
+
+.chore-item.is-done {
+  opacity: 0.55;
+  text-decoration: line-through;
+}
+
+.chore-chip {
+  flex: 0 0 auto;
+  font-size: 0.8em;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: rgba(238, 242, 255, 0.75);
+}
+
+.chore-chip.is-on {
+  background: rgba(34, 197, 94, 0.22);
+  border-color: rgba(34, 197, 94, 0.45);
+  color: #bbf7d0;
 }
 
 /* —— Weekly —— */

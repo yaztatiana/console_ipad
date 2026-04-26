@@ -575,6 +575,7 @@
   function readFormIntoData() {
     var data = DS.load();
     data.settings.title = ($("setting-title") && $("setting-title").value) || data.settings.title;
+    data.settings.bannerMessage = ($("setting-banner") && $("setting-banner").value) || data.settings.bannerMessage || "";
     var rot = Number(($("setting-rotation") && $("setting-rotation").value) || data.settings.rotationSec);
     data.settings.rotationSec = rot;
     readMaster(data);
@@ -653,6 +654,7 @@
   function fillForm(data) {
     data = DS.ensureFourSlides(data);
     if ($("setting-title")) $("setting-title").value = data.settings.title || "";
+    if ($("setting-banner")) $("setting-banner").value = data.settings.bannerMessage || "";
     if ($("setting-rotation")) $("setting-rotation").value = String(data.settings.rotationSec != null ? data.settings.rotationSec : 15);
     if ($("sync-key")) $("sync-key").value = SYNC.getLocalSyncKey() || "";
     fillMaster(data.slides[0]);

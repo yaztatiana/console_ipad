@@ -7,6 +7,7 @@
   var pollTimer = null;
   var rotateTimer = null;
   var POLL_MS = 30000;
+  var pushTimer = null;
 
   function $(id) {
     return document.getElementById(id);
@@ -15,6 +16,37 @@
   function setHint(text) {
     var el = $("sync-hint");
     if (el) el.textContent = text;
+  }
+
+  function setBanner(text) {
+    var box = $("tv-banner");
+    var track = $("tv-banner-track");
+    text = String(text || "").trim();
+    if (!box || !track) return;
+    track.innerHTML = "";
+    if (!text) {
+      box.classList.remove("is-on");
+      return;
+    }
+    box.classList.add("is-on");
+    // Duplicate text to reduce blank gaps during marquee
+    var a = el("span", "tv-banner-text", text);
+    var b = el("span", "tv-banner-text", text);
+    track.appendChild(a);
+    track.appendChild(b);
+  }
+
+  function maybePushToCloud() {
+    if (pushTimer) clearTimeout(pushTimer);
+    pushTimer = null;
+    pushTimer = window.setTimeout(function () {
+      SYNC.ready().then(function (ok) {
+        var key = SYNC.getLocalSyncKey();
+        if (!ok || !key) return;
+        var data = DS.load();
+        SYNC.push(key, data).catch(function () {});
+      });
+    }, 1500);
   }
 
   function el(tag, cls, text) {
@@ -96,16 +128,19 @@
     }
     root.appendChild(sch);
     var ch = el("div", "master-chores");
-    ch.appendChild(el("div", "block-title", "Chores today (to-do)"));
+    ch.appendChild(el("div", "block-title", "Chores today (check off)"));
     var cul = el("ul", "chore-list");
-    var pending = 0;
     for (i = 0; i < s.choresToday.length; i++) {
       var c = s.choresToday[i];
-      if (c.done) continue;
-      pending++;
-      cul.appendChild(el("li", "", c.text || "—"));
+      var li = el("li", "chore-item" + (c.done ? " is-done" : ""));
+      li.setAttribute("role", "button");
+      li.setAttribute("tabindex", "0");
+      li.setAttribute("data-chore-id", c.id || "");
+      li.appendChild(el("span", "", c.text || "—"));
+      li.appendChild(el("span", "chore-chip" + (c.done ? " is-on" : ""), c.done ? "Done" : "To‑do"));
+      cul.appendChild(li);
     }
-    if (!pending) cul.appendChild(el("li", "muted", "Nothing left — nice work."));
+    if (!s.choresToday.length) cul.appendChild(el("li", "muted", "Add chores in Manage."));
     ch.appendChild(cul);
     root.appendChild(ch);
   }
@@ -206,12 +241,51 @@
     var data = DS.load();
     var t = $("dash-title");
     if (t) t.textContent = data.settings.title || "Dashboard";
+    setBanner(data.settings.bannerMessage || "");
     var i;
     for (i = 0; i < 4; i++) {
       var slideEl = $("slide-" + i);
       if (!slideEl) continue;
       renderSlideInto(slideEl, data.slides[i], i);
     }
+  }
+
+  function toggleChoreById(choreId) {
+    if (!choreId) return;
+    var data = DS.load();
+    var m = data.slides[0];
+    var i;
+    for (i = 0; i < m.choresToday.length; i++) {
+      if (m.choresToday[i].id === choreId) {
+        m.choresToday[i].done = !m.choresToday[i].done;
+        DS.save(data);
+        renderSlideContent();
+        maybePushToCloud();
+        return;
+      }
+    }
+  }
+
+  function onClick(e) {
+    var t = e.target;
+    while (t && t !== document.body) {
+      if (t && t.getAttribute && t.getAttribute("data-chore-id")) {
+        toggleChoreById(t.getAttribute("data-chore-id"));
+        return;
+      }
+      t = t.parentNode;
+    }
+  }
+
+  function onItemKeyDown(e) {
+    var k = e.key;
+    if (k !== "Enter" && k !== " ") return;
+    var t = e.target;
+    if (!t || !t.getAttribute) return;
+    var id = t.getAttribute("data-chore-id");
+    if (!id) return;
+    e.preventDefault();
+    toggleChoreById(id);
   }
 
   function armRotate() {
@@ -278,6 +352,8 @@
       pullThenRender(true);
     }, POLL_MS);
     document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("click", onClick);
+    document.addEventListener("keydown", onItemKeyDown);
     armRotate();
   }
 

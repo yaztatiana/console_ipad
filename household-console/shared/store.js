@@ -309,6 +309,7 @@
       version: 1,
       settings: {
         title: "Home dashboard",
+        bannerMessage: "",
         rotationSec: 15,
       },
       slides: [defaultMaster(), defaultWeekly(), defaultChores(), defaultShopping()],
@@ -327,6 +328,7 @@
     });
     if (!data.settings || typeof data.settings !== "object") data.settings = defaultData().settings;
     data.settings.title = String(data.settings.title || "Home dashboard");
+    data.settings.bannerMessage = String(data.settings.bannerMessage || "");
     var sec = Number(data.settings.rotationSec);
     if (sec !== sec || sec < 3) {
       var legacyMs = Number(data.settings.rotationMs);
