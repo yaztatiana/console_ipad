@@ -63,7 +63,7 @@
       }
       if (res.status === 204) return null;
       var ct = res.headers.get("content-type") || "";
-      if (!ct.includes("application/json")) return null;
+      if (ct.indexOf("application/json") === -1) return null;
       return res.json();
     });
   }

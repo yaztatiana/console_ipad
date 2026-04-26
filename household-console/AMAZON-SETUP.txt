@@ -110,6 +110,10 @@ Narrow it down:
   • Silk: Settings → Privacy → clear browsing data (cache/cookies) for the
     site, then try again.
 
+  • Manage looks updated in Amplify but controls feel dead: the app no longer
+    uses a service worker; do a normal reload. If it persists, clear site data
+    once (old PWA installs may still hold a worker until removed).
+
   • Custom domain: wait for DNS to propagate; verify SSL in Amplify Domain
     management shows "Available".
 

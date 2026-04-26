@@ -40,6 +40,8 @@ a:hover {
 .wrap {
   position: relative;
   z-index: 2;
+  isolation: isolate;
+  pointer-events: auto;
   max-width: 1080px;
   margin: 0 auto;
   padding: calc(1.25rem + env(safe-area-inset-top)) 1.1rem calc(2.75rem + env(safe-area-inset-bottom));
@@ -60,15 +62,7 @@ h1 {
   font-weight: 700;
   margin: 0 0 0.35rem;
   letter-spacing: 0.01em;
-  background: linear-gradient(
-    100deg,
-    var(--text),
-    var(--sky),
-    var(--title-grad-end, var(--text))
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--text);
 }
 
 .sub {
@@ -83,6 +77,28 @@ h1 {
   flex-wrap: wrap;
   gap: 0.55rem;
   align-items: flex-end;
+}
+
+/* Valid link (not <a><button>); matches primary control row. */
+a.btn-tv {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text);
+  padding: 0.55rem 0.95rem;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  text-decoration: none;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.25);
+}
+
+a.btn-tv:hover {
+  text-decoration: none;
+  filter: brightness(1.06);
 }
 
 .theme-inline {
@@ -121,13 +137,13 @@ button,
   font-weight: 600;
   font-family: var(--font-sans);
   cursor: pointer;
-  backdrop-filter: blur(10px);
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.25);
 }
 
 /* Strong keyboard / D-pad focus so selection is obvious (Safari + TV remotes). */
 button:focus-visible,
 .filebtn:focus-visible,
+a.btn-tv:focus-visible,
 a:focus-visible,
 input:focus-visible,
 select:focus-visible,
@@ -183,7 +199,6 @@ button.danger {
   border-radius: var(--radius-lg);
   padding: 1.1rem 1.15rem 1.15rem;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(16px);
 }
 
 .card h2 {
