@@ -565,13 +565,3 @@ html:not([data-theme]) .dots .dot.is-on {
   background: var(--sm-pink-hot);
   box-shadow: 0 0 12px rgba(255, 120, 190, 0.55);
 }
-
-/* Manage boot chip: keep readable width (avoid one-character “column” reflow). */
-html[data-theme="sailor-moon-prism"] #js-status,
-html:not([data-theme]) #js-status {
-  isolation: isolate;
-  min-width: min(100%, 12rem);
-  max-width: min(36rem, calc(100vw - 1.5rem));
-  white-space: normal;
-  word-break: normal;
-}

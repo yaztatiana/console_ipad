@@ -28,42 +28,6 @@ body::before {
     linear-gradient(180deg, var(--manage-fade-top) 0%, var(--ink) 42%);
 }
 
-.js-status {
-  position: fixed;
-  top: calc(0.55rem + env(safe-area-inset-top, 0px));
-  left: 0.75rem;
-  right: auto;
-  bottom: auto;
-  z-index: 2147483647;
-  min-width: 10.5rem;
-  max-width: min(36rem, calc(100vw - 1.5rem - env(safe-area-inset-left, 0px)));
-  padding: 0.35rem 0.55rem;
-  border-radius: 10px;
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  line-height: 1.35;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  background: rgba(0, 0, 0, 0.72);
-  color: #f2f4ff;
-  pointer-events: none;
-  opacity: 0.95;
-  white-space: normal;
-  overflow-wrap: anywhere;
-  word-break: normal;
-}
-
-.js-status--ok {
-  border-color: rgba(94, 245, 192, 0.45);
-  color: #d9fff3;
-}
-
-.js-status--err {
-  pointer-events: auto;
-  background: rgba(40, 0, 12, 0.78);
-  border-color: rgba(255, 123, 156, 0.55);
-  color: #fff1f5;
-}
-
 a {
   color: var(--sky);
   text-decoration: none;
@@ -270,6 +234,11 @@ textarea {
 
 .small {
   max-width: 240px;
+}
+
+input.edit-on-click[readonly],
+input.edit-on-click:read-only {
+  cursor: pointer;
 }
 
 .list {

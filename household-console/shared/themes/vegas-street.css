@@ -186,11 +186,6 @@ html[data-theme="vegas-street"] body.tv-tenfoot .graffiti-rail--top .graffiti-bu
   display: none;
 }
 
-/* TV: remove the top header bar (house name + clock). Vegas uses the HUD date strip instead. */
-html[data-theme="vegas-street"] body.tv-tenfoot .tv-header {
-  display: none;
-}
-
 html[data-theme="vegas-street"] body.tv-tenfoot .vegas-ticker {
   display: block;
   width: 100%;
