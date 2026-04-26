@@ -52,8 +52,8 @@
   function readFormIntoData() {
     var data = DS.load();
     data.settings.title = ($("setting-title") && $("setting-title").value) || data.settings.title;
-    var rot = Number(($("setting-rotation") && $("setting-rotation").value) || data.settings.rotationMs);
-    data.settings.rotationMs = rot;
+    var rot = Number(($("setting-rotation") && $("setting-rotation").value) || data.settings.rotationSec);
+    data.settings.rotationSec = rot;
     var i;
     for (i = 0; i < 4; i++) {
       var t = $("slide-title-" + i);
@@ -70,7 +70,7 @@
     var st = $("setting-title");
     var sr = $("setting-rotation");
     if (st) st.value = data.settings.title || "";
-    if (sr) sr.value = String(data.settings.rotationMs || 15000);
+    if (sr) sr.value = String(data.settings.rotationSec != null ? data.settings.rotationSec : 15);
     var sk = $("sync-key");
     if (sk) sk.value = SYNC.getLocalSyncKey() || "";
     var i;

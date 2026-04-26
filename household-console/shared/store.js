@@ -13,7 +13,7 @@
       version: 1,
       settings: {
         title: "Home dashboard",
-        rotationMs: 15000,
+        rotationSec: 15,
       },
       slides: [
         { id: uid(), title: "Slide 1", body: "Welcome. Edit this on the management page." },
@@ -47,8 +47,19 @@
     });
     if (!data.settings || typeof data.settings !== "object") data.settings = defaultData().settings;
     data.settings.title = String(data.settings.title || "Home dashboard");
-    var rot = Number(data.settings.rotationMs);
-    data.settings.rotationMs = rot >= 3000 && rot <= 120000 ? rot : 15000;
+    var sec = Number(data.settings.rotationSec);
+    if (sec !== sec || sec < 3) {
+      var legacyMs = Number(data.settings.rotationMs);
+      if (legacyMs >= 3000 && legacyMs <= 120000) {
+        sec = Math.round(legacyMs / 1000);
+      } else {
+        sec = 15;
+      }
+    }
+    if (sec < 3) sec = 3;
+    if (sec > 120) sec = 120;
+    data.settings.rotationSec = sec;
+    delete data.settings.rotationMs;
     data.version = 1;
     return data;
   }

@@ -69,8 +69,10 @@
     if (rotateTimer) clearInterval(rotateTimer);
     rotateTimer = null;
     var data = DS.load();
-    var ms = data.settings.rotationMs || 15000;
-    if (ms < 3000) ms = 3000;
+    var sec = Number(data.settings.rotationSec);
+    if (sec !== sec || sec < 3) sec = 15;
+    if (sec > 120) sec = 120;
+    var ms = sec * 1000;
     rotateTimer = window.setInterval(function () {
       setSlide(idx + 1);
     }, ms);
