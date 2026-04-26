@@ -53,6 +53,67 @@
     </section>
 
     <form id="dash-form" class="manage-form">
+      <section class="manage-section hub-section">
+        <h2>Add &amp; import</h2>
+        <p class="manage-help">Use these shortcuts, then <strong>Save dashboard</strong> (or Push). Imports merge with what is already in the slide editors below.</p>
+
+        <div class="hub-block">
+          <h3 class="hub-h3">Calendar events (.ics)</h3>
+          <p class="manage-help tight">Export from Google Calendar, Apple Calendar, etc. Files are read in the browser only—nothing is uploaded to a server.</p>
+          <div class="manage-row">
+            <label class="manage-label" for="ics-file">Upload file</label>
+            <input class="manage-input" type="file" id="ics-file" accept=".ics,.ical,.ifb,text/calendar" />
+          </div>
+          <div class="manage-row" style="align-items: flex-start">
+            <label class="manage-label" for="ics-paste">Or paste</label>
+            <textarea class="manage-input" id="ics-paste" rows="4" placeholder="BEGIN:VCALENDAR&#10;BEGIN:VEVENT&#10;..."></textarea>
+          </div>
+          <div class="hub-checks">
+            <label class="chk"><input type="checkbox" id="ics-target-master" checked /> Merge into <strong>slide 1</strong> — next 3 days</label>
+            <label class="chk"><input type="checkbox" id="ics-target-weekly" checked /> Merge into <strong>slide 2</strong> — weekly schedule</label>
+          </div>
+          <button type="button" class="btn btn-primary" id="btn-ics-import">Import calendar events</button>
+        </div>
+
+        <div class="hub-block">
+          <h3 class="hub-h3">Grocery list</h3>
+          <div class="manage-row hub-inline">
+            <label class="manage-label" for="qa-grocery-slot">List</label>
+            <select class="manage-input manage-input-narrow" id="qa-grocery-slot" aria-label="Which grocery list">
+              <option value="0">List 1</option>
+              <option value="1">List 2</option>
+              <option value="2">List 3</option>
+              <option value="3">List 4</option>
+            </select>
+            <input class="manage-input" id="qa-grocery-item" type="text" placeholder="e.g. Milk, eggs" autocomplete="off" />
+            <button type="button" class="btn" id="btn-qa-grocery">Add item</button>
+          </div>
+        </div>
+
+        <div class="hub-block">
+          <h3 class="hub-h3">Chores</h3>
+          <div class="manage-row hub-inline">
+            <label class="manage-label" for="qa-chore-today-text">Today (TV)</label>
+            <input class="manage-input" id="qa-chore-today-text" type="text" placeholder="Chore for today’s slide" autocomplete="off" />
+            <button type="button" class="btn" id="btn-qa-chore-today">Add</button>
+          </div>
+          <p class="manage-help tight">Weekly chart — check days this chore is due, then add.</p>
+          <div class="manage-row hub-inline hub-wrap">
+            <input class="manage-input chore-name-input" id="qa-weekly-chore-name" type="text" placeholder="Chore name" autocomplete="off" />
+            <span class="qa-dow-group" aria-label="Days due">
+              <label class="chk chk-dow"><input type="checkbox" id="qa-wd-0" />M</label>
+              <label class="chk chk-dow"><input type="checkbox" id="qa-wd-1" />T</label>
+              <label class="chk chk-dow"><input type="checkbox" id="qa-wd-2" />W</label>
+              <label class="chk chk-dow"><input type="checkbox" id="qa-wd-3" />T</label>
+              <label class="chk chk-dow"><input type="checkbox" id="qa-wd-4" />F</label>
+              <label class="chk chk-dow"><input type="checkbox" id="qa-wd-5" />S</label>
+              <label class="chk chk-dow"><input type="checkbox" id="qa-wd-6" />S</label>
+            </span>
+            <button type="button" class="btn" id="btn-qa-chore-weekly">Add to chart</button>
+          </div>
+        </div>
+      </section>
+
       <section class="manage-section" id="slides-wrap">
         <h2>Slide content</h2>
         <p class="manage-help">Schedules: one line per event. Optional time at the start, e.g. <code>9:00 — School</code>. Shopping items: prefix with <code>[x]</code> for checked.</p>

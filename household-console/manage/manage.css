@@ -310,3 +310,56 @@
   border-top: none;
   padding-top: 0;
 }
+
+.hub-section {
+  max-width: 52rem;
+}
+
+.hub-block {
+  margin: 1.25rem 0;
+  padding: 1rem 1.1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.hub-h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  font-weight: 650;
+}
+
+.hub-checks {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin: 0.75rem 0;
+}
+
+.hub-checks .chk {
+  align-items: flex-start;
+}
+
+.hub-inline {
+  align-items: center;
+}
+
+.hub-inline .manage-label {
+  min-width: 6rem;
+}
+
+.hub-wrap {
+  flex-wrap: wrap;
+}
+
+.qa-dow-group {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.35rem;
+  align-items: center;
+}
+
+#ics-file {
+  padding: 0.35rem 0;
+  font-size: 0.9rem;
+}

@@ -79,6 +79,272 @@
       .join("\n");
   }
 
+  function pad2(n) {
+    return (n < 10 ? "0" : "") + n;
+  }
+
+  function icsUnescape(str) {
+    return String(str || "")
+      .replace(/\\N/g, "\n")
+      .replace(/\\n/g, "\n")
+      .replace(/\\,/g, ",")
+      .replace(/\\\\/g, "\\");
+  }
+
+  function icsUnfold(raw) {
+    var lines = String(raw || "")
+      .replace(/\r\n/g, "\n")
+      .split("\n");
+    var out = [];
+    var i;
+    for (i = 0; i < lines.length; i++) {
+      var line = lines[i];
+      if (i > 0 && (line.charAt(0) === " " || line.charAt(0) === "\t")) {
+        out[out.length - 1] += line.substring(1);
+      } else {
+        out.push(line);
+      }
+    }
+    return out.join("\n");
+  }
+
+  function icsLineValue(line) {
+    var idx = line.indexOf(":");
+    return idx >= 0 ? line.slice(idx + 1) : "";
+  }
+
+  function parseIcsDateValue(val) {
+    val = String(val || "").replace(/,/g, "").trim();
+    if (!val) return null;
+    if (/^\d{8}$/.test(val)) {
+      var y = +val.slice(0, 4);
+      var mo = +val.slice(4, 6) - 1;
+      var d = +val.slice(6, 8);
+      return new Date(y, mo, d, 12, 0, 0);
+    }
+    var m = val.match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})(Z)?/);
+    if (m) {
+      if (m[7]) {
+        return new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]));
+      }
+      return new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]);
+    }
+    return null;
+  }
+
+  function parseIcs(text) {
+    var body = icsUnfold(text);
+    var lines = body.split("\n");
+    var events = [];
+    var cur = null;
+    var i;
+    for (i = 0; i < lines.length; i++) {
+      var line = lines[i];
+      if (!line) continue;
+      if (/^BEGIN:VEVENT/i.test(line)) {
+        cur = { summary: "", startVal: "", allDay: false };
+        continue;
+      }
+      if (/^END:VEVENT/i.test(line)) {
+        if (cur) {
+          var start = parseIcsDateValue(cur.startVal);
+          var summary = icsUnescape(cur.summary).trim();
+          if (start) {
+            events.push({
+              summary: summary || "(Event)",
+              start: start,
+              allDay: cur.allDay,
+            });
+          }
+        }
+        cur = null;
+        continue;
+      }
+      if (!cur) continue;
+      if (/^SUMMARY/i.test(line)) {
+        cur.summary = icsLineValue(line);
+      } else if (/^DTSTART/i.test(line)) {
+        var dv = icsLineValue(line);
+        cur.allDay = /VALUE=DATE/i.test(line) || /^\d{8}$/.test(dv);
+        cur.startVal = dv;
+      }
+    }
+    return events;
+  }
+
+  function startOfDay(d) {
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  }
+
+  function addDays(d, n) {
+    var x = new Date(d.getTime());
+    x.setDate(x.getDate() + n);
+    return x;
+  }
+
+  function sameDay(a, b) {
+    return startOfDay(a).getTime() === startOfDay(b).getTime();
+  }
+
+  /** Monday = 0 … Sunday = 6 (matches slide 2 columns) */
+  function jsDayToWeeklyIndex(jsDay) {
+    return jsDay === 0 ? 6 : jsDay - 1;
+  }
+
+  function mergeIcsEvents(events, data, opts) {
+    var m = data.slides[0];
+    var w = data.slides[1];
+    var today = startOfDay(new Date());
+    var d0 = addDays(today, 0);
+    var d1 = addDays(today, 1);
+    var d2 = addDays(today, 2);
+    var k;
+    for (k = 0; k < events.length; k++) {
+      var ev = events[k];
+      if (!ev.start) continue;
+      var sd = startOfDay(ev.start);
+      var item;
+      if (ev.allDay) {
+        item = { time: "", text: ev.summary };
+      } else {
+        item = {
+          time: pad2(ev.start.getHours()) + ":" + pad2(ev.start.getMinutes()),
+          text: ev.summary,
+        };
+      }
+      if (opts.master) {
+        var slot = -1;
+        if (sameDay(sd, d0)) slot = 0;
+        else if (sameDay(sd, d1)) slot = 1;
+        else if (sameDay(sd, d2)) slot = 2;
+        if (slot >= 0) {
+          m.scheduleThreeDay[slot].items = m.scheduleThreeDay[slot].items.concat([item]);
+        }
+      }
+      if (opts.weekly) {
+        var wi = jsDayToWeeklyIndex(ev.start.getDay());
+        w.days[wi].items = w.days[wi].items.concat([item]);
+      }
+    }
+  }
+
+  function runCalendarImportFromText(text) {
+    var evs = parseIcs(text);
+    if (!evs.length) {
+      showBanner("err", "No events found. Use a valid iCalendar (.ics) export.");
+      return;
+    }
+    var masterOn = $("ics-target-master") && $("ics-target-master").checked;
+    var weeklyOn = $("ics-target-weekly") && $("ics-target-weekly").checked;
+    if (!masterOn && !weeklyOn) {
+      showBanner("err", "Select at least one target: slide 1 (3-day) and/or slide 2 (weekly).");
+      return;
+    }
+    var data = readFormIntoData();
+    mergeIcsEvents(evs, data, { master: masterOn, weekly: weeklyOn });
+    saveLocal(data);
+    showBanner("ok", "Imported " + evs.length + " event(s). Review slide editors below, then Save or Push.");
+  }
+
+  function onCalendarImportClick() {
+    var fileEl = $("ics-file");
+    var pasteEl = $("ics-paste");
+    if (fileEl && fileEl.files && fileEl.files[0]) {
+      var f = fileEl.files[0];
+      var reader = new FileReader();
+      reader.onload = function () {
+        runCalendarImportFromText(String(reader.result || ""));
+        fileEl.value = "";
+      };
+      reader.onerror = function () {
+        showBanner("err", "Could not read that file.");
+      };
+      reader.readAsText(f);
+      return;
+    }
+    var pasted = pasteEl ? pasteEl.value : "";
+    if (String(pasted).trim()) {
+      runCalendarImportFromText(pasted);
+      return;
+    }
+    showBanner("err", "Choose an .ics file or paste calendar text first.");
+  }
+
+  function addGroceryLineToSlot(slot) {
+    var itemEl = $("qa-grocery-item");
+    var line = itemEl ? itemEl.value.trim() : "";
+    if (!line) {
+      showBanner("err", "Enter an item to add.");
+      return;
+    }
+    var nm = $("s-list-" + slot + "-name");
+    var ta = $("s-list-" + slot + "-lines");
+    if (!ta) return;
+    if (nm && !nm.value.trim()) nm.value = "Groceries";
+    var cur = String(ta.value || "").replace(/\s+$/, "");
+    ta.value = cur ? cur + "\n" + line : line;
+    if (itemEl) itemEl.value = "";
+    showBanner("ok", "Added to list " + (slot + 1) + " — click Save dashboard when done.");
+  }
+
+  function addChoreTodayToFirstSlot() {
+    var inp = $("qa-chore-today-text");
+    var text = inp ? inp.value.trim() : "";
+    if (!text) {
+      showBanner("err", "Enter a chore name.");
+      return;
+    }
+    var ci;
+    for (ci = 0; ci < N_CHORE_TODAY; ci++) {
+      var tx = $("m-chore-" + ci + "-text");
+      if (tx && !String(tx.value || "").trim()) {
+        tx.value = text;
+        var ch = $("m-chore-" + ci + "-done");
+        if (ch) ch.checked = false;
+        if (inp) inp.value = "";
+        showBanner("ok", "Added to today’s chores — Save dashboard when done.");
+        return;
+      }
+    }
+    showBanner("err", "Today’s chore list is full in the form below. Remove one or edit there.");
+  }
+
+  function addWeeklyChoreFromHub() {
+    var nmEl = $("qa-weekly-chore-name");
+    var name = nmEl ? nmEl.value.trim() : "";
+    if (!name) {
+      showBanner("err", "Enter a chore name for the chart.");
+      return;
+    }
+    var days = [];
+    var dj;
+    for (dj = 0; dj < 7; dj++) {
+      var cb = $("qa-wd-" + dj);
+      days.push(!!(cb && cb.checked));
+    }
+    var any = days.some(function (x) {
+      return x;
+    });
+    if (!any) {
+      showBanner("err", "Check at least one weekday this chore is due.");
+      return;
+    }
+    var data = readFormIntoData();
+    var c = data.slides[2];
+    if (c.rows.length >= N_CHART_ROWS) {
+      showBanner("err", "Chore chart is full. Remove a row below first.");
+      return;
+    }
+    c.rows.push({ id: uid(), name: name, days: days });
+    saveLocal(data);
+    if (nmEl) nmEl.value = "";
+    for (dj = 0; dj < 7; dj++) {
+      var cbx = $("qa-wd-" + dj);
+      if (cbx) cbx.checked = false;
+    }
+    showBanner("ok", "Added row to weekly chore chart.");
+  }
+
   function buildSlideFields() {
     var wrap = $("slide-fields");
     if (!wrap) return;
@@ -496,6 +762,21 @@
     if (bk) bk.addEventListener("click", onSaveKey);
     if (bp) bp.addEventListener("click", onPush);
     if (bl) bl.addEventListener("click", onPull);
+    var bi = $("btn-ics-import");
+    if (bi) bi.addEventListener("click", onCalendarImportClick);
+    var bq = $("btn-qa-grocery");
+    if (bq) {
+      bq.addEventListener("click", function () {
+        var sel = $("qa-grocery-slot");
+        var slot = sel ? parseInt(sel.value, 10) : 0;
+        if (slot !== slot || slot < 0 || slot > 3) slot = 0;
+        addGroceryLineToSlot(slot);
+      });
+    }
+    var bct = $("btn-qa-chore-today");
+    if (bct) bct.addEventListener("click", addChoreTodayToFirstSlot);
+    var bcw = $("btn-qa-chore-weekly");
+    if (bcw) bcw.addEventListener("click", addWeeklyChoreFromHub);
   }
 
   if (document.readyState === "loading") {
