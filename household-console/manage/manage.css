@@ -30,8 +30,10 @@ body::before {
 
 .js-status {
   position: fixed;
-  right: 0.75rem;
+  left: 0.75rem;
   bottom: 0.75rem;
+  right: auto;
+  max-width: min(720px, calc(100vw - 1.5rem - env(safe-area-inset-left, 0px)));
   z-index: 2147483647;
   padding: 0.35rem 0.55rem;
   border-radius: 10px;

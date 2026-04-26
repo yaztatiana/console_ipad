@@ -94,6 +94,60 @@
     return document.getElementById(id);
   }
 
+  /** NodeList#forEach is missing on some TV WebViews; this is safe everywhere. */
+  function forEachNode(list, fn) {
+    var arr = Array.prototype.slice.call(list || []);
+    var i;
+    for (i = 0; i < arr.length; i++) fn(arr[i], i);
+  }
+
+  /** Click target may be a <label>; readOnly unlock must still find the paired input. */
+  function resolveEditOnClickInput(target) {
+    var el = target;
+    if (!el) return null;
+    if (el.nodeType !== 1) el = el.parentElement;
+    if (!el) return null;
+    if (el.tagName === "INPUT" && el.classList && el.classList.contains("edit-on-click")) {
+      return el;
+    }
+    if (el.tagName === "LABEL") {
+      if (el.htmlFor) {
+        var byId = document.getElementById(el.htmlFor);
+        if (
+          byId &&
+          byId.tagName === "INPUT" &&
+          byId.classList &&
+          byId.classList.contains("edit-on-click")
+        ) {
+          return byId;
+        }
+      }
+      var inner = el.querySelector ? el.querySelector("input.edit-on-click") : null;
+      if (inner) return inner;
+    }
+    var p = el;
+    var depth = 0;
+    while (p && p.nodeType === 1 && depth < 10) {
+      if (p.tagName === "INPUT" && p.classList && p.classList.contains("edit-on-click")) {
+        return p;
+      }
+      if (p.tagName === "LABEL" && p.htmlFor) {
+        var inp = document.getElementById(p.htmlFor);
+        if (
+          inp &&
+          inp.tagName === "INPUT" &&
+          inp.classList &&
+          inp.classList.contains("edit-on-click")
+        ) {
+          return inp;
+        }
+      }
+      p = p.parentElement;
+      depth++;
+    }
+    return null;
+  }
+
   function onClick(id, handler) {
     var el = $(id);
     if (!el) return;
@@ -256,7 +310,8 @@
     var d = HC.parseISO(iso);
     if (!d) return "";
     var pad = function (n) {
-      return String(n).padStart(2, "0");
+      var s = String(n);
+      return s.length < 2 ? "0" + s : s;
     };
     return (
       d.getFullYear() +
@@ -274,7 +329,8 @@
   function fromLocalValue(s) {
     if (!s) return null;
     var d = new Date(s);
-    if (Number.isNaN(d.getTime())) return null;
+    var t = d.getTime();
+    if (t !== t) return null;
     return d.toISOString();
   }
 
@@ -482,7 +538,7 @@
     if (!data.dayMessages || typeof data.dayMessages !== "object") data.dayMessages = {};
     var root = $("dinner-week");
     if (!root) return;
-    root.querySelectorAll("input[data-date]").forEach(function (inp) {
+    forEachNode(root.querySelectorAll("input[data-date]"), function (inp) {
       var iso = inp.getAttribute("data-date");
       var meal = inp.getAttribute("data-meal");
       if (!iso || meal !== "dinner") return;
@@ -495,7 +551,7 @@
         data.meals[iso].dinner = v;
       }
     });
-    root.querySelectorAll("input[data-day-message]").forEach(function (inp) {
+    forEachNode(root.querySelectorAll("input[data-day-message]"), function (inp) {
       var iso = inp.getAttribute("data-day-message");
       if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return;
       var v = String(inp.value || "").trim();
@@ -545,6 +601,13 @@
     buildDinnerEditor();
     updateSyncUi();
     lockEditOnClickFields();
+    var boot = $("js-status");
+    if (boot && !boot.dataset.appReady) {
+      boot.dataset.appReady = "1";
+      boot.className = "js-status js-status--ok";
+      boot.textContent =
+        "Manage ready — tap a field or its label to edit (TV: use remote OK on the input).";
+    }
   }
 
   function updateVegasTickerWordCount() {
@@ -569,7 +632,7 @@
   function lockEditOnClickFields() {
     var root = document.querySelector(".wrap");
     if (!root) return;
-    root.querySelectorAll("input.edit-on-click").forEach(function (el) {
+    forEachNode(root.querySelectorAll("input.edit-on-click"), function (el) {
       el.readOnly = true;
     });
   }
@@ -581,9 +644,14 @@
     root.addEventListener(
       "click",
       function (e) {
-        var el = e.target.closest("input.edit-on-click");
+        var el = resolveEditOnClickInput(e.target);
         if (el && el.readOnly) {
           el.readOnly = false;
+          try {
+            el.focus({ preventScroll: true });
+          } catch (err) {
+            el.focus();
+          }
         }
       },
       true
@@ -592,7 +660,9 @@
       "keydown",
       function (e) {
         var el = e.target;
-        if (!el.matches || !el.matches("input.edit-on-click")) return;
+        if (!el || el.tagName !== "INPUT" || !el.classList || !el.classList.contains("edit-on-click")) {
+          return;
+        }
         if (el.readOnly && (e.key === "Enter" || e.key === " ")) {
           e.preventDefault();
           el.readOnly = false;
@@ -740,8 +810,8 @@
         if (!data.weatherLocation || typeof data.weatherLocation !== "object") {
           data.weatherLocation = { lat: 40.7128, lon: -74.006 };
         }
-        if (Number.isFinite(lat)) data.weatherLocation.lat = lat;
-        if (Number.isFinite(lon)) data.weatherLocation.lon = lon;
+        if (isFinite(lat)) data.weatherLocation.lat = lat;
+        if (isFinite(lon)) data.weatherLocation.lon = lon;
         data.weatherLocation.preset = "custom";
       } else {
         applyWeatherPresetToData(data, pid);
@@ -792,11 +862,12 @@
       }
       var end = fromLocalValue($("ev-end").value);
       var ids = [];
-      $("ev-members")
-        .querySelectorAll("input[type=checkbox]:checked")
-        .forEach(function (cb) {
+      forEachNode(
+        $("ev-members").querySelectorAll("input[type=checkbox]:checked"),
+        function (cb) {
           ids.push(cb.value);
-        });
+        }
+      );
       var data = HS.load();
       data.events.push({
         id: HS.uid(),

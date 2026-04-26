@@ -149,9 +149,12 @@
   }
 
   function memberById(data, id) {
-    return (data.members || []).find(function (m) {
-      return m.id === id;
-    });
+    var list = data.members || [];
+    var i;
+    for (i = 0; i < list.length; i++) {
+      if (list[i] && list[i].id === id) return list[i];
+    }
+    return undefined;
   }
 
   function isValidPayload(o) {

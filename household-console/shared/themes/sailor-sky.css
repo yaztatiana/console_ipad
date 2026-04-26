@@ -20,6 +20,8 @@ html:not([data-theme]) .sailor-sky {
   position: fixed;
   inset: 0;
   z-index: 1;
+  /* Redundant with .sailor-sky but avoids rare WebViews still hit-testing moons/stars. */
+  pointer-events: none;
 }
 
 .sailor-moon {
