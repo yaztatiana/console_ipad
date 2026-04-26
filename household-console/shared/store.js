@@ -5,6 +5,17 @@
   var SLIDE_KINDS = ["master", "weekly", "chores", "shopping"];
   var WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
+  // Monday-based week id: YYYY-Www (e.g. 2026-W17)
+  function weekId(d) {
+    var x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    var day = x.getDay(); // 0 Sun .. 6 Sat
+    var isoDay = day === 0 ? 7 : day; // 1..7 (Mon..Sun)
+    x.setDate(x.getDate() + (4 - isoDay)); // Thursday
+    var yearStart = new Date(x.getFullYear(), 0, 1);
+    var weekNo = Math.ceil(((x - yearStart) / 86400000 + 1) / 7);
+    return x.getFullYear() + "-W" + (weekNo < 10 ? "0" : "") + weekNo;
+  }
+
   function uid() {
     if (global.crypto && global.crypto.randomUUID) return global.crypto.randomUUID();
     return "id-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 10);
@@ -35,8 +46,8 @@
         blankScheduleDay("Day after"),
       ],
       choresToday: [
-        { id: uid(), text: "Example chore", done: false },
-        { id: uid(), text: "Another task", done: true },
+        { id: uid(), text: "Example chore", done: false, recurring: true },
+        { id: uid(), text: "One-off task", done: true, recurring: false },
       ],
     };
   }
@@ -157,6 +168,7 @@
         id: c.id || uid(),
         text: String(c.text || ""),
         done: !!c.done,
+        recurring: !!c.recurring,
       };
     });
   }
@@ -310,6 +322,7 @@
       settings: {
         title: "Home dashboard",
         bannerMessage: "",
+        lastWeekId: "",
         rotationSec: 15,
       },
       slides: [defaultMaster(), defaultWeekly(), defaultChores(), defaultShopping()],
@@ -329,6 +342,8 @@
     if (!data.settings || typeof data.settings !== "object") data.settings = defaultData().settings;
     data.settings.title = String(data.settings.title || "Home dashboard");
     data.settings.bannerMessage = String(data.settings.bannerMessage || "");
+    var curWeek = weekId(new Date());
+    data.settings.lastWeekId = String(data.settings.lastWeekId || curWeek);
     var sec = Number(data.settings.rotationSec);
     if (sec !== sec || sec < 3) {
       var legacyMs = Number(data.settings.rotationMs);
@@ -343,6 +358,21 @@
     data.settings.rotationSec = sec;
     delete data.settings.rotationMs;
     data.version = 1;
+
+    // Weekly rollover for "today chores": keep recurring, reset done, drop one-offs.
+    if (data.settings.lastWeekId !== curWeek) {
+      var m = data.slides[0];
+      if (m && m.kind === "master" && Array.isArray(m.choresToday)) {
+        m.choresToday = m.choresToday
+          .filter(function (c) {
+            return c && c.recurring && String(c.text || "").trim();
+          })
+          .map(function (c) {
+            return { id: c.id || uid(), text: String(c.text || ""), done: false, recurring: true };
+          });
+      }
+      data.settings.lastWeekId = curWeek;
+    }
     return data;
   }
 
@@ -351,7 +381,10 @@
       var raw = global.localStorage.getItem(STORAGE_KEY);
       if (!raw) return ensureFourSlides(defaultData());
       var data = JSON.parse(raw);
-      return ensureFourSlides(data);
+      var normalized = ensureFourSlides(data);
+      // Persist weekly rollover (or other normalization) immediately.
+      global.localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
+      return normalized;
     } catch (e) {
       return ensureFourSlides(defaultData());
     }

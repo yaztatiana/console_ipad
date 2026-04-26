@@ -396,7 +396,7 @@
     }
     html += "</div>";
 
-    html += '<div class="subsection"><h4>Today’s chores (unchecked = still on TV)</h4><div class="chore-today-grid">';
+    html += '<div class="subsection"><h4>Today’s chores</h4><p class="manage-help tight">If <strong>Recurring</strong> is checked, the chore resets at the start of the week. If not, it drops off next week.</p><div class="chore-today-grid">';
     var ci;
     for (ci = 0; ci < N_CHORE_TODAY; ci++) {
       html +=
@@ -408,7 +408,10 @@
         '" />' +
         '<label class="chk"><input type="checkbox" id="m-chore-' +
         ci +
-        '-done" /> Done</label></div>';
+        '-done" /> Done</label>' +
+        '<label class="chk"><input type="checkbox" id="m-chore-' +
+        ci +
+        '-rec" /> Recurring</label></div>';
     }
     html += "</div></div></div>";
 
@@ -510,11 +513,12 @@
     for (ci = 0; ci < N_CHORE_TODAY; ci++) {
       var tx = $("m-chore-" + ci + "-text");
       var ch = $("m-chore-" + ci + "-done");
+      var rc = $("m-chore-" + ci + "-rec");
       var text = tx ? tx.value.trim() : "";
       if (!text) continue;
       var match = prevList[chores.length];
       var cid = match && match.text === text && match.id ? match.id : uid();
-      chores.push({ id: cid, text: text, done: !!(ch && ch.checked) });
+      chores.push({ id: cid, text: text, done: !!(ch && ch.checked), recurring: !!(rc && rc.checked) });
     }
     m.choresToday = chores;
   }
@@ -607,9 +611,11 @@
     for (ci = 0; ci < N_CHORE_TODAY; ci++) {
       var tx = $("m-chore-" + ci + "-text");
       var ch = $("m-chore-" + ci + "-done");
+      var rc = $("m-chore-" + ci + "-rec");
       var c = m.choresToday[ci];
       if (tx) tx.value = c ? c.text || "" : "";
       if (ch) ch.checked = !!(c && c.done);
+      if (rc) rc.checked = !!(c && c.recurring);
     }
   }
 
