@@ -1,5 +1,4 @@
-# AWS Amplify Hosting. Logic lives in scripts/ so YAML has no bare colons in commands.
-# See household-console/AMAZON-SETUP.txt
+# AWS Amplify Hosting — static site from household-console/
 version: 1
 frontend:
   phases:
