@@ -8,9 +8,14 @@
   var initPromise = null;
 
   function scriptDir() {
-    var s = document.querySelector('script[src$="/shared/sync.js"]');
-    if (!s || !s.src) return "./shared/";
-    return s.src.replace(/\/sync\.js(\?.*)?$/, "/");
+    var scripts = document.getElementsByTagName("script");
+    for (var i = 0; i < scripts.length; i++) {
+      var s = scripts[i];
+      if (!s.src) continue;
+      if (!/\/sync\.js([?#]|$)/.test(s.src)) continue;
+      return s.src.replace(/\/sync\.js(\?.*)?$/, "/");
+    }
+    return "./shared/";
   }
 
   function loadConfig() {
