@@ -2,10 +2,306 @@
   "use strict";
 
   var STORAGE_KEY = "dashboard-console-v1";
+  var SLIDE_KINDS = ["master", "weekly", "chores", "shopping"];
+  var WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
   function uid() {
     if (global.crypto && global.crypto.randomUUID) return global.crypto.randomUUID();
     return "id-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 10);
+  }
+
+  function blankForecastDay() {
+    return { dayLabel: "", high: "", low: "", condition: "" };
+  }
+
+  function blankScheduleDay(dateLabel) {
+    return { dateLabel: dateLabel || "", items: [] };
+  }
+
+  function defaultMaster() {
+    return {
+      id: uid(),
+      kind: "master",
+      heading: "Today & ahead",
+      weatherToday: { temp: "—°", condition: "Add weather in Manage" },
+      forecast: [
+        { dayLabel: "Tomorrow", high: "", low: "", condition: "" },
+        { dayLabel: "+2 days", high: "", low: "", condition: "" },
+        { dayLabel: "+3 days", high: "", low: "", condition: "" },
+      ],
+      scheduleThreeDay: [
+        blankScheduleDay("Today"),
+        blankScheduleDay("Tomorrow"),
+        blankScheduleDay("Day after"),
+      ],
+      choresToday: [
+        { id: uid(), text: "Example chore", done: false },
+        { id: uid(), text: "Another task", done: true },
+      ],
+    };
+  }
+
+  function defaultWeekly() {
+    var days = WEEKDAYS.map(function (d) {
+      return { dayLabel: d, items: [] };
+    });
+    days[0].items = [{ time: "9:00", text: "School drop-off" }];
+    days[2].items = [{ time: "15:30", text: "Soccer practice" }];
+    return {
+      id: uid(),
+      kind: "weekly",
+      heading: "Weekly schedule",
+      days: days,
+    };
+  }
+
+  function defaultChores() {
+    return {
+      id: uid(),
+      kind: "chores",
+      heading: "Weekly chore chart",
+      dayLabels: WEEKDAYS.slice(),
+      rows: [
+        { id: uid(), name: "Kitchen counters", days: [true, false, true, false, true, false, false] },
+        { id: uid(), name: "Trash / recycling", days: [false, false, false, false, true, false, false] },
+      ],
+    };
+  }
+
+  function defaultShopping() {
+    return {
+      id: uid(),
+      kind: "shopping",
+      heading: "Shopping lists",
+      amazonNote: "Amazon household lists will connect here later.",
+      lists: [
+        {
+          id: uid(),
+          name: "Groceries",
+          items: [
+            { id: uid(), text: "Milk", checked: false },
+            { id: uid(), text: "Bread", checked: false },
+          ],
+        },
+        {
+          id: uid(),
+          name: "Home",
+          items: [{ id: uid(), text: "Light bulbs", checked: false }],
+        },
+      ],
+    };
+  }
+
+  function defaultsForIndex(i) {
+    if (i === 0) return defaultMaster();
+    if (i === 1) return defaultWeekly();
+    if (i === 2) return defaultChores();
+    return defaultShopping();
+  }
+
+  function isLegacySlide(s) {
+    if (!s || typeof s !== "object") return true;
+    return SLIDE_KINDS.indexOf(s.kind) === -1;
+  }
+
+  function normalizeForecast(arr) {
+    var out = [];
+    var i;
+    for (i = 0; i < 3; i++) {
+      var x = arr && arr[i];
+      if (!x || typeof x !== "object") {
+        out.push(blankForecastDay());
+        continue;
+      }
+      out.push({
+        dayLabel: String(x.dayLabel || ""),
+        high: String(x.high || ""),
+        low: String(x.low || ""),
+        condition: String(x.condition || ""),
+      });
+    }
+    return out;
+  }
+
+  function normalizeScheduleItems(items) {
+    if (!Array.isArray(items)) return [];
+    return items.map(function (it) {
+      if (!it || typeof it !== "object") return { time: "", text: "" };
+      return { time: String(it.time || ""), text: String(it.text || "") };
+    });
+  }
+
+  function normalizeScheduleThreeDay(arr) {
+    var labels = ["Today", "Tomorrow", "Day after"];
+    var out = [];
+    var i;
+    for (i = 0; i < 3; i++) {
+      var x = arr && arr[i];
+      if (!x || typeof x !== "object") {
+        out.push(blankScheduleDay(labels[i]));
+        continue;
+      }
+      out.push({
+        dateLabel: String(x.dateLabel || labels[i]),
+        items: normalizeScheduleItems(x.items),
+      });
+    }
+    return out;
+  }
+
+  function normalizeChoresToday(arr) {
+    if (!Array.isArray(arr)) return [];
+    return arr.map(function (c) {
+      if (!c || typeof c !== "object") return { id: uid(), text: "", done: false };
+      return {
+        id: c.id || uid(),
+        text: String(c.text || ""),
+        done: !!c.done,
+      };
+    });
+  }
+
+  function normalizeMaster(s, i) {
+    var d = defaultsForIndex(i);
+    var base = !s || s.kind !== "master" ? d : s;
+    var wt = base.weatherToday && typeof base.weatherToday === "object" ? base.weatherToday : {};
+    return {
+      id: base.id || uid(),
+      kind: "master",
+      heading: String(base.heading || d.heading),
+      weatherToday: {
+        temp: String(wt.temp != null ? wt.temp : d.weatherToday.temp),
+        condition: String(wt.condition != null ? wt.condition : d.weatherToday.condition),
+      },
+      forecast: normalizeForecast(base.forecast),
+      scheduleThreeDay: normalizeScheduleThreeDay(base.scheduleThreeDay),
+      choresToday: normalizeChoresToday(base.choresToday),
+    };
+  }
+
+  function normalizeWeeklyDays(arr) {
+    var out = [];
+    var i;
+    for (i = 0; i < 7; i++) {
+      var x = arr && arr[i];
+      var label = WEEKDAYS[i];
+      if (!x || typeof x !== "object") {
+        out.push({ dayLabel: label, items: [] });
+        continue;
+      }
+      out.push({
+        dayLabel: String(x.dayLabel || label),
+        items: normalizeScheduleItems(x.items),
+      });
+    }
+    return out;
+  }
+
+  function normalizeWeekly(s, i) {
+    var d = defaultsForIndex(i);
+    var base = !s || s.kind !== "weekly" ? d : s;
+    return {
+      id: base.id || uid(),
+      kind: "weekly",
+      heading: String(base.heading || d.heading),
+      days: normalizeWeeklyDays(base.days),
+    };
+  }
+
+  function normalizeChoreRows(rows) {
+    if (!Array.isArray(rows)) return [];
+    return rows.map(function (r) {
+      if (!r || typeof r !== "object") return { id: uid(), name: "", days: [false, false, false, false, false, false, false] };
+      var days = Array.isArray(r.days) ? r.days : [];
+      var d = [];
+      var j;
+      for (j = 0; j < 7; j++) {
+        d.push(!!days[j]);
+      }
+      return { id: r.id || uid(), name: String(r.name || ""), days: d };
+    });
+  }
+
+  function normalizeChores(s, i) {
+    var d = defaultsForIndex(i);
+    var base = !s || s.kind !== "chores" ? d : s;
+    var labels = Array.isArray(base.dayLabels) && base.dayLabels.length === 7 ? base.dayLabels.map(String) : WEEKDAYS.slice();
+    return {
+      id: base.id || uid(),
+      kind: "chores",
+      heading: String(base.heading || d.heading),
+      dayLabels: labels,
+      rows: normalizeChoreRows(base.rows),
+    };
+  }
+
+  function normalizeListItems(items) {
+    if (!Array.isArray(items)) return [];
+    return items.map(function (it) {
+      if (!it || typeof it !== "object") return { id: uid(), text: "", checked: false };
+      return {
+        id: it.id || uid(),
+        text: String(it.text || ""),
+        checked: !!it.checked,
+      };
+    });
+  }
+
+  function normalizeShoppingLists(lists) {
+    if (!Array.isArray(lists)) return [];
+    return lists.map(function (L) {
+      if (!L || typeof L !== "object") return { id: uid(), name: "", items: [] };
+      return {
+        id: L.id || uid(),
+        name: String(L.name || ""),
+        items: normalizeListItems(L.items),
+      };
+    });
+  }
+
+  function normalizeShopping(s, i) {
+    var d = defaultsForIndex(i);
+    var base = !s || s.kind !== "shopping" ? d : s;
+    return {
+      id: base.id || uid(),
+      kind: "shopping",
+      heading: String(base.heading || d.heading),
+      amazonNote: String(base.amazonNote != null ? base.amazonNote : d.amazonNote),
+      lists: normalizeShoppingLists(base.lists),
+    };
+  }
+
+  function migrateLegacySlide(s, index) {
+    var fresh = defaultsForIndex(index);
+    fresh.id = (s && s.id) || fresh.id;
+    fresh.heading = String((s && s.title) || fresh.heading);
+    var body = String((s && s.body) || "").trim();
+    if (body) {
+      if (index === 0) {
+        fresh.scheduleThreeDay[0].items = [{ time: "", text: body }];
+      } else if (index === 1) {
+        fresh.days[0].items = [{ time: "", text: body }];
+      } else if (index === 2) {
+        fresh.rows = [{ id: uid(), name: body, days: [false, false, false, false, false, false, false] }];
+      } else {
+        fresh.amazonNote = body;
+      }
+    }
+    return fresh;
+  }
+
+  function normalizeSlideAt(s, index) {
+    var expected = SLIDE_KINDS[index];
+    var working = s;
+    if (isLegacySlide(s)) {
+      working = migrateLegacySlide(s || {}, index);
+    } else if (s.kind !== expected) {
+      working = migrateLegacySlide({}, index);
+    }
+    if (expected === "master") return normalizeMaster(working, index);
+    if (expected === "weekly") return normalizeWeekly(working, index);
+    if (expected === "chores") return normalizeChores(working, index);
+    return normalizeShopping(working, index);
   }
 
   function defaultData() {
@@ -15,12 +311,7 @@
         title: "Home dashboard",
         rotationSec: 15,
       },
-      slides: [
-        { id: uid(), title: "Slide 1", body: "Welcome. Edit this on the management page." },
-        { id: uid(), title: "Slide 2", body: "Connect Supabase so TV and browser stay in sync." },
-        { id: uid(), title: "Slide 3", body: "Use Left / Right on the Fire TV remote to change slides." },
-        { id: uid(), title: "Slide 4", body: "Open Management in a desktop browser to update settings." },
-      ],
+      slides: [defaultMaster(), defaultWeekly(), defaultChores(), defaultShopping()],
     };
   }
 
@@ -28,22 +319,11 @@
     if (!data || typeof data !== "object") return defaultData();
     if (!Array.isArray(data.slides)) data.slides = [];
     while (data.slides.length < 4) {
-      data.slides.push({
-        id: uid(),
-        title: "Slide " + (data.slides.length + 1),
-        body: "",
-      });
+      data.slides.push(defaultsForIndex(data.slides.length));
     }
     if (data.slides.length > 4) data.slides = data.slides.slice(0, 4);
     data.slides = data.slides.map(function (s, i) {
-      if (!s || typeof s !== "object") {
-        return { id: uid(), title: "Slide " + (i + 1), body: "" };
-      }
-      return {
-        id: s.id || uid(),
-        title: String(s.title || "Slide " + (i + 1)),
-        body: String(s.body || ""),
-      };
+      return normalizeSlideAt(s, i);
     });
     if (!data.settings || typeof data.settings !== "object") data.settings = defaultData().settings;
     data.settings.title = String(data.settings.title || "Home dashboard");
@@ -95,6 +375,7 @@
 
   global.DashboardStore = {
     STORAGE_KEY: STORAGE_KEY,
+    WEEKDAYS: WEEKDAYS,
     load: load,
     save: save,
     exportJson: exportJson,
@@ -102,5 +383,6 @@
     isValidPayload: isValidPayload,
     ensureFourSlides: ensureFourSlides,
     defaultData: defaultData,
+    normalizeSlideAt: normalizeSlideAt,
   };
 })(window);

@@ -11,7 +11,9 @@
     <header class="manage-header">
       <div>
         <h1 class="manage-h1">Dashboard management</h1>
-        <p class="manage-lead">Edit slides and settings. The same sync key on TV and here keeps Fire TV and desktop in step.</p>
+        <p class="manage-lead">
+          Four fixed templates: today’s overview (weather, forecast, 3-day schedule, chores), weekly schedule, weekly chore chart, and shopping lists (Amazon linking later).
+        </p>
       </div>
       <nav class="manage-nav">
         <a class="manage-link" href="/tv/">Open TV view</a>
@@ -23,7 +25,7 @@
 
     <section class="manage-section">
       <h2>Cloud sync</h2>
-      <p class="manage-help">Run the Supabase migration in this repo, deploy <code>shared/sync-config.json</code> (or set Amplify env vars), then use one shared key per household.</p>
+      <p class="manage-help">Set Amplify env vars or <code>shared/sync-config.json</code>; one sync key per household.</p>
       <div class="manage-row">
         <label class="manage-label" for="sync-key">Sync key</label>
         <input class="manage-input manage-input-wide" id="sync-key" type="text" autocomplete="off" spellcheck="false" placeholder="Paste or generate a key" />
@@ -52,8 +54,8 @@
 
     <form id="dash-form" class="manage-form">
       <section class="manage-section" id="slides-wrap">
-        <h2>Four slides</h2>
-        <p class="manage-help">Exactly four slides are shown on the TV. Empty body is allowed.</p>
+        <h2>Slide content</h2>
+        <p class="manage-help">Schedules: one line per event. Optional time at the start, e.g. <code>9:00 — School</code>. Shopping items: prefix with <code>[x]</code> for checked.</p>
         <div id="slide-fields"></div>
       </section>
       <div class="manage-footer-actions">

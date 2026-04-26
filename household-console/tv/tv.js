@@ -4,7 +4,6 @@
   var DS = window.DashboardStore;
   var SYNC = window.DashboardSync;
   var idx = 0;
-  var slides = [];
   var pollTimer = null;
   var rotateTimer = null;
   var POLL_MS = 30000;
@@ -16,6 +15,13 @@
   function setHint(text) {
     var el = $("sync-hint");
     if (el) el.textContent = text;
+  }
+
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null && text !== "") n.textContent = text;
+    return n;
   }
 
   function renderDots() {
@@ -35,14 +41,165 @@
     idx = (next % 4 + 4) % 4;
     var i;
     for (i = 0; i < 4; i++) {
-      var el = $("slide-" + i);
-      if (!el) continue;
-      el.classList.toggle("is-active", i === idx);
-      el.setAttribute("aria-hidden", i === idx ? "false" : "true");
+      var slideEl = $("slide-" + i);
+      if (!slideEl) continue;
+      slideEl.classList.toggle("is-active", i === idx);
+      slideEl.setAttribute("aria-hidden", i === idx ? "false" : "true");
     }
     renderDots();
     var active = $("slide-" + idx);
     if (active) active.focus({ preventScroll: true });
+  }
+
+  function renderMaster(root, s) {
+    root.className = "slide-inner slide-master";
+    var h = el("h2", "slide-heading", s.heading || "Today & ahead");
+    root.appendChild(h);
+    var grid = el("div", "master-grid");
+    var wx = el("div", "master-weather");
+    wx.appendChild(el("div", "master-weather-label", "Today"));
+    var tline = el("div", "master-weather-temp", s.weatherToday.temp || "—");
+    wx.appendChild(tline);
+    wx.appendChild(el("div", "master-weather-condition", s.weatherToday.condition || ""));
+    grid.appendChild(wx);
+    var fc = el("div", "master-forecast");
+    fc.appendChild(el("div", "block-title", "3-day forecast"));
+    var i;
+    for (i = 0; i < s.forecast.length; i++) {
+      var f = s.forecast[i];
+      var row = el("div", "forecast-row");
+      row.appendChild(el("span", "forecast-day", f.dayLabel || "Day " + (i + 1)));
+      var hl = f.high || "—";
+      var ll = f.low ? " / " + f.low : "";
+      row.appendChild(el("span", "forecast-hi-lo", hl + ll));
+      row.appendChild(el("span", "forecast-cond", f.condition || ""));
+      fc.appendChild(row);
+    }
+    grid.appendChild(fc);
+    root.appendChild(grid);
+    var sch = el("div", "master-schedule");
+    sch.appendChild(el("div", "block-title", "Next 3 days"));
+    for (i = 0; i < s.scheduleThreeDay.length; i++) {
+      var day = s.scheduleThreeDay[i];
+      var block = el("div", "schedule-day-block");
+      block.appendChild(el("div", "schedule-day-label", day.dateLabel || ""));
+      var list = el("ul", "schedule-list");
+      var j;
+      for (j = 0; j < day.items.length; j++) {
+        var it = day.items[j];
+        var line = (it.time ? it.time + " · " : "") + (it.text || "");
+        if (line) list.appendChild(el("li", "", line));
+      }
+      if (!list.childNodes.length) list.appendChild(el("li", "muted", "—"));
+      block.appendChild(list);
+      sch.appendChild(block);
+    }
+    root.appendChild(sch);
+    var ch = el("div", "master-chores");
+    ch.appendChild(el("div", "block-title", "Chores today (to-do)"));
+    var cul = el("ul", "chore-list");
+    var pending = 0;
+    for (i = 0; i < s.choresToday.length; i++) {
+      var c = s.choresToday[i];
+      if (c.done) continue;
+      pending++;
+      cul.appendChild(el("li", "", c.text || "—"));
+    }
+    if (!pending) cul.appendChild(el("li", "muted", "Nothing left — nice work."));
+    ch.appendChild(cul);
+    root.appendChild(ch);
+  }
+
+  function renderWeekly(root, s) {
+    root.className = "slide-inner slide-weekly";
+    root.appendChild(el("h2", "slide-heading", s.heading || "Weekly schedule"));
+    var wrap = el("div", "weekly-columns");
+    var i;
+    for (i = 0; i < s.days.length; i++) {
+      var d = s.days[i];
+      var col = el("div", "weekly-col");
+      col.appendChild(el("div", "weekly-col-head", d.dayLabel || ""));
+      var ul = el("ul", "weekly-items");
+      var j;
+      for (j = 0; j < d.items.length; j++) {
+        var it = d.items[j];
+        var line = (it.time ? it.time + " " : "") + (it.text || "");
+        if (line.trim()) ul.appendChild(el("li", "", line));
+      }
+      if (!ul.childNodes.length) ul.appendChild(el("li", "muted", "—"));
+      col.appendChild(ul);
+      wrap.appendChild(col);
+    }
+    root.appendChild(wrap);
+  }
+
+  function renderChores(root, s) {
+    root.className = "slide-inner slide-chores";
+    root.appendChild(el("h2", "slide-heading", s.heading || "Weekly chores"));
+    var table = el("div", "chore-table-wrap");
+    var head = el("div", "chore-row chore-head");
+    head.appendChild(el("div", "chore-cell chore-name-h", "Chore"));
+    var labels = s.dayLabels && s.dayLabels.length === 7 ? s.dayLabels : DS.WEEKDAYS;
+    var i;
+    for (i = 0; i < 7; i++) {
+      head.appendChild(el("div", "chore-cell chore-dow", labels[i] || DS.WEEKDAYS[i]));
+    }
+    table.appendChild(head);
+    for (i = 0; i < s.rows.length; i++) {
+      var r = s.rows[i];
+      var row = el("div", "chore-row");
+      row.appendChild(el("div", "chore-cell chore-name", r.name || "—"));
+      var j;
+      for (j = 0; j < 7; j++) {
+        var on = r.days && r.days[j];
+        row.appendChild(el("div", "chore-cell chore-mark" + (on ? " is-on" : ""), on ? "✓" : ""));
+      }
+      table.appendChild(row);
+    }
+    if (!s.rows.length) {
+      var empty = el("p", "muted center-msg", "Add rows in Manage.");
+      table.appendChild(empty);
+    }
+    root.appendChild(table);
+  }
+
+  function renderShopping(root, s) {
+    root.className = "slide-inner slide-shopping";
+    root.appendChild(el("h2", "slide-heading", s.heading || "Shopping"));
+    if (s.amazonNote) {
+      var note = el("p", "amazon-note", s.amazonNote);
+      root.appendChild(note);
+    }
+    var lists = el("div", "shopping-lists");
+    var i;
+    for (i = 0; i < s.lists.length; i++) {
+      var L = s.lists[i];
+      var box = el("div", "shopping-list");
+      box.appendChild(el("div", "shopping-list-name", L.name || "List"));
+      var ul = el("ul", "shopping-items");
+      var j;
+      for (j = 0; j < L.items.length; j++) {
+        var it = L.items[j];
+        var li = el("li", "shopping-item" + (it.checked ? " is-checked" : ""), (it.checked ? "[x] " : "[ ] ") + (it.text || ""));
+        ul.appendChild(li);
+      }
+      if (!L.items.length) ul.appendChild(el("li", "muted", "—"));
+      box.appendChild(ul);
+      lists.appendChild(box);
+    }
+    if (!s.lists.length) lists.appendChild(el("p", "muted center-msg", "Add lists in Manage."));
+    root.appendChild(lists);
+  }
+
+  function renderSlideInto(elSlide, s, index) {
+    elSlide.innerHTML = "";
+    var inner = el("div", "");
+    elSlide.appendChild(inner);
+    var kind = s.kind || ["master", "weekly", "chores", "shopping"][index];
+    if (kind === "master") renderMaster(inner, s);
+    else if (kind === "weekly") renderWeekly(inner, s);
+    else if (kind === "chores") renderChores(inner, s);
+    else renderShopping(inner, s);
   }
 
   function renderSlideContent() {
@@ -51,18 +208,10 @@
     if (t) t.textContent = data.settings.title || "Dashboard";
     var i;
     for (i = 0; i < 4; i++) {
-      var el = $("slide-" + i);
-      if (!el) continue;
-      el.innerHTML = "";
-      var s = data.slides[i] || { title: "Slide " + (i + 1), body: "" };
-      var h = document.createElement("h2");
-      h.textContent = s.title || "Slide " + (i + 1);
-      var p = document.createElement("p");
-      p.textContent = s.body || "";
-      el.appendChild(h);
-      el.appendChild(p);
+      var slideEl = $("slide-" + i);
+      if (!slideEl) continue;
+      renderSlideInto(slideEl, data.slides[i], i);
     }
-    slides = document.querySelectorAll(".slide");
   }
 
   function armRotate() {

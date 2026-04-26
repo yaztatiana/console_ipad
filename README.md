@@ -6,7 +6,7 @@ Static dashboard for **Fire TV** (four slides, remote-friendly) plus a **managem
 
 - `/` — landing with links
 - `/tv/` — TV / 10-foot view (left/right on the remote)
-- `/manage/` — edit slides, rotation (seconds), title, sync key, push/pull
+- `/manage/` — structured slides (today overview, weekly schedule, chore chart, shopping), rotation (seconds), sync
 
 ## Supabase
 
