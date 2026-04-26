@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#0b0d12" />
+    <title>Dashboard — TV</title>
+    <link rel="stylesheet" href="/tv/tv.css" />
+  </head>
+  <body class="tv-body">
+    <header class="tv-header">
+      <h1 class="tv-title" id="dash-title">Dashboard</h1>
+      <a class="tv-manage" href="/manage/" id="manage-link">Manage</a>
+    </header>
+
+    <main class="tv-stage" aria-roledescription="carousel" aria-label="Dashboard slides">
+      <div class="slide is-active" id="slide-0" tabindex="0" role="tabpanel"></div>
+      <div class="slide" id="slide-1" tabindex="0" role="tabpanel"></div>
+      <div class="slide" id="slide-2" tabindex="0" role="tabpanel"></div>
+      <div class="slide" id="slide-3" tabindex="0" role="tabpanel"></div>
+    </main>
+
+    <footer class="tv-footer">
+      <div class="tv-dots" id="dots" aria-hidden="true"></div>
+      <p class="tv-hint" id="sync-hint">◀ ▶ Change slide · syncs with Manage when cloud is on</p>
+    </footer>
+
+    <script src="/shared/store.js"></script>
+    <script src="/shared/sync.js"></script>
+    <script src="/tv/tv.js"></script>
+  </body>
+</html>
