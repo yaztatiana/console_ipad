@@ -81,6 +81,12 @@
     el.addEventListener("click", handler);
   }
 
+  function forEachNode(list, fn) {
+    var arr = Array.prototype.slice.call(list || []);
+    var i;
+    for (i = 0; i < arr.length; i++) fn(arr[i], i);
+  }
+
   function saveLocalAndSync(data) {
     HS.save(data);
     scheduleCloudPush();
@@ -237,7 +243,8 @@
     var d = HC.parseISO(iso);
     if (!d) return "";
     var pad = function (n) {
-      return String(n).padStart(2, "0");
+      var s = String(n);
+      return s.length < 2 ? "0" + s : s;
     };
     return (
       d.getFullYear() +
@@ -255,7 +262,8 @@
   function fromLocalValue(s) {
     if (!s) return null;
     var d = new Date(s);
-    if (Number.isNaN(d.getTime())) return null;
+    var t = d.getTime();
+    if (t !== t) return null;
     return d.toISOString();
   }
 
@@ -438,7 +446,6 @@
       inp.dataset.meal = "dinner";
       var cur = (data.meals && data.meals[iso] && data.meals[iso].dinner) || "";
       inp.value = cur;
-      inp.className = "edit-on-click";
       col.appendChild(lab);
       col.appendChild(inp);
       var labMsg = document.createElement("label");
@@ -450,7 +457,6 @@
       inpMsg.dataset.dayMessage = iso;
       inpMsg.value =
         data.dayMessages && data.dayMessages[iso] ? String(data.dayMessages[iso]) : "";
-      inpMsg.className = "edit-on-click";
       col.appendChild(labMsg);
       col.appendChild(inpMsg);
       root.appendChild(col);
@@ -463,7 +469,7 @@
     if (!data.dayMessages || typeof data.dayMessages !== "object") data.dayMessages = {};
     var root = $("dinner-week");
     if (!root) return;
-    root.querySelectorAll("input[data-date]").forEach(function (inp) {
+    forEachNode(root.querySelectorAll("input[data-date]"), function (inp) {
       var iso = inp.getAttribute("data-date");
       var meal = inp.getAttribute("data-meal");
       if (!iso || meal !== "dinner") return;
@@ -476,7 +482,7 @@
         data.meals[iso].dinner = v;
       }
     });
-    root.querySelectorAll("input[data-day-message]").forEach(function (inp) {
+    forEachNode(root.querySelectorAll("input[data-day-message]"), function (inp) {
       var iso = inp.getAttribute("data-day-message");
       if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return;
       var v = String(inp.value || "").trim();
@@ -525,7 +531,6 @@
     refreshMemberSelects();
     buildDinnerEditor();
     updateSyncUi();
-    lockEditOnClickFields();
   }
 
   function updateVegasTickerWordCount() {
@@ -545,52 +550,6 @@
     var words = raw.split(/\s+/).filter(Boolean);
     if (words.length <= 150) return;
     el.value = words.slice(0, 150).join(" ") + " ";
-  }
-
-  function lockEditOnClickFields() {
-    var root = document.querySelector(".wrap");
-    if (!root) return;
-    root.querySelectorAll("input.edit-on-click").forEach(function (el) {
-      el.readOnly = true;
-    });
-  }
-
-  function wireEditOnClickDelegation() {
-    var root = document.querySelector(".wrap");
-    if (!root || root.dataset.editOnClickWired) return;
-    root.dataset.editOnClickWired = "1";
-    root.addEventListener(
-      "click",
-      function (e) {
-        var el = e.target.closest("input.edit-on-click");
-        if (el && el.readOnly) {
-          el.readOnly = false;
-        }
-      },
-      true
-    );
-    root.addEventListener(
-      "keydown",
-      function (e) {
-        var el = e.target;
-        if (!el.matches || !el.matches("input.edit-on-click")) return;
-        if (el.readOnly && (e.key === "Enter" || e.key === " ")) {
-          e.preventDefault();
-          el.readOnly = false;
-        }
-      },
-      true
-    );
-    root.addEventListener(
-      "blur",
-      function (e) {
-        var el = e.target;
-        if (el.matches && el.matches("input.edit-on-click")) {
-          el.readOnly = true;
-        }
-      },
-      true
-    );
   }
 
   function wireWeatherUi() {
@@ -658,7 +617,6 @@
   }
 
   function wire() {
-    wireEditOnClickDelegation();
     wireWeatherUi();
     var ski = $("sync-key-input");
     if (ski) ski.value = HSync.getLocalSyncKey() || "";
@@ -721,8 +679,8 @@
         if (!data.weatherLocation || typeof data.weatherLocation !== "object") {
           data.weatherLocation = { lat: 40.7128, lon: -74.006 };
         }
-        if (Number.isFinite(lat)) data.weatherLocation.lat = lat;
-        if (Number.isFinite(lon)) data.weatherLocation.lon = lon;
+        if (isFinite(lat)) data.weatherLocation.lat = lat;
+        if (isFinite(lon)) data.weatherLocation.lon = lon;
         data.weatherLocation.preset = "custom";
       } else {
         applyWeatherPresetToData(data, pid);
@@ -754,7 +712,6 @@
           people.scrollIntoView({ block: "nearest", behavior: "smooth" });
         }
         if (mn) {
-          mn.readOnly = false;
           try {
             mn.focus({ preventScroll: true });
           } catch (e) {
@@ -773,11 +730,12 @@
       }
       var end = fromLocalValue($("ev-end").value);
       var ids = [];
-      $("ev-members")
-        .querySelectorAll("input[type=checkbox]:checked")
-        .forEach(function (cb) {
+      forEachNode(
+        $("ev-members").querySelectorAll("input[type=checkbox]:checked"),
+        function (cb) {
           ids.push(cb.value);
-        });
+        }
+      );
       var data = HS.load();
       data.events.push({
         id: HS.uid(),

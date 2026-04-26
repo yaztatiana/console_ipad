@@ -2,47 +2,54 @@
   "use strict";
 
   function pad2(n) {
-    return String(n).padStart(2, "0");
+    var s = String(n);
+    return s.length < 2 ? "0" + s : s;
   }
 
   function toISODate(d) {
-    const x = new Date(d);
-    return `${x.getFullYear()}-${pad2(x.getMonth() + 1)}-${pad2(x.getDate())}`;
+    var x = new Date(d);
+    return x.getFullYear() + "-" + pad2(x.getMonth() + 1) + "-" + pad2(x.getDate());
   }
 
   /** Monday-start week */
   function startOfWeekMonday(d) {
-    const x = new Date(d);
-    const day = (x.getDay() + 6) % 7;
+    var x = new Date(d);
+    var day = (x.getDay() + 6) % 7;
     x.setHours(0, 0, 0, 0);
     x.setDate(x.getDate() - day);
     return x;
   }
 
   function addDays(d, n) {
-    const x = new Date(d);
+    var x = new Date(d);
     x.setDate(x.getDate() + n);
     return x;
   }
 
   function weekDates(anchor) {
-    const start = startOfWeekMonday(anchor);
-    return Array.from({ length: 7 }, (_, i) => addDays(start, i));
+    var start = startOfWeekMonday(anchor);
+    var out = [];
+    var i;
+    for (i = 0; i < 7; i++) {
+      out.push(addDays(start, i));
+    }
+    return out;
   }
 
   function parseISO(s) {
     if (!s) return null;
-    const t = Date.parse(s);
-    return Number.isNaN(t) ? null : new Date(t);
+    var t = Date.parse(s);
+    if (typeof t !== "number" || t !== t) return null;
+    return new Date(t);
   }
 
   function eventsInRange(events, start, end) {
-    const s = start.getTime();
-    const e = end.getTime();
+    var s = start.getTime();
+    var e = end.getTime();
     return (events || []).filter(function (ev) {
-      const t = parseISO(ev.start);
+      var t = parseISO(ev.start);
       if (!t) return false;
-      const ts = t.getTime();
+      var ts = t.getTime();
       return ts >= s && ts <= e;
     });
   }

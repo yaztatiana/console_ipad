@@ -36,7 +36,7 @@ In AWS Console (https://console.aws.amazon.com/amplify/):
   e) Paths on that host:
        /              → landing (index.html)
        /tv/           → Fire TV / 10-foot dashboard
-       /manage/       → PWA editor
+       /manage/       → household editor (no service worker; old Manage SW caches are cleared on load)
 
   f) Optional custom domain: Amplify → Domain management → add your domain.
 

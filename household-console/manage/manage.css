@@ -236,11 +236,6 @@ textarea {
   max-width: 240px;
 }
 
-input.edit-on-click[readonly],
-input.edit-on-click:read-only {
-  cursor: pointer;
-}
-
 .list {
   margin: 0.85rem 0 0;
   padding: 0;
