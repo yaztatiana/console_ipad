@@ -17,8 +17,7 @@
       var msg = r && r.message ? String(r.message) : String(r || "Unknown rejection");
       setStatus("err", "JS rejected:\n" + msg);
     });
-    // If we run at all, mark as on. If something fails later, handler flips to err.
-    setStatus("on", "");
+    setStatus("ok", "Manage JS loaded");
   })();
 
   var HC = window.HouseholdCalendar;

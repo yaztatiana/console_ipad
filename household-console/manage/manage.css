@@ -30,32 +30,32 @@ body::before {
 
 .js-status {
   position: fixed;
-  left: 0.75rem;
-  top: 0.75rem;
-  z-index: 99;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  z-index: 2147483647;
   padding: 0.35rem 0.55rem;
   border-radius: 10px;
   font-family: var(--font-mono);
-  font-size: 0.8rem;
-  border: 1px solid var(--line);
-  background: rgba(0, 0, 0, 0.55);
-  color: var(--text);
+  font-size: 0.78rem;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(0, 0, 0, 0.72);
+  color: #f2f4ff;
   pointer-events: none;
-  opacity: 0.9;
+  opacity: 0.95;
+  max-width: min(760px, calc(100% - 1.5rem));
+  white-space: pre-wrap;
 }
 
-.js-status--on {
-  display: none;
+.js-status--ok {
+  border-color: rgba(94, 245, 192, 0.45);
+  color: #d9fff3;
 }
 
 .js-status--err {
-  display: block;
   pointer-events: auto;
   background: rgba(40, 0, 12, 0.78);
   border-color: rgba(255, 123, 156, 0.55);
   color: #fff1f5;
-  max-width: min(760px, calc(100% - 1.5rem));
-  white-space: pre-wrap;
 }
 
 a {

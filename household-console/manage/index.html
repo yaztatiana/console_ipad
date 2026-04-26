@@ -13,8 +13,15 @@
   </head>
   <body>
     <div class="js-status js-status--off" id="js-status" aria-live="polite">
-      Loading…
+      BOOT…
     </div>
+    <script>
+      (function () {
+        var el = document.getElementById("js-status");
+        if (!el) return;
+        el.textContent = "BOOT: HTML parsed";
+      })();
+    </script>
     <div class="graffiti-rail graffiti-rail--top" aria-hidden="true">
       <div class="graffiti-rail__inner">
         <span class="graffiti-burst">LIVE</span>
