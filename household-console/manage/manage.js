@@ -733,6 +733,22 @@
     }
   }
 
+  function enterKeyViaPrompt() {
+    var current = SYNC.getLocalSyncKey() || "";
+    var v = window.prompt("Enter sync key for this device", current) || "";
+    v = String(v).trim();
+    if (!v) return;
+    var inp = $("sync-key");
+    if (inp) inp.value = v;
+    if (v.length < 8) {
+      showBanner("err", "Sync key should be at least 8 characters.");
+      return;
+    }
+    SYNC.setLocalSyncKey(v);
+    showBanner("ok", "Sync key saved on this device.");
+    refreshSyncLine();
+  }
+
   function applyKeyFromUrlIfPresent() {
     try {
       var qs = new URLSearchParams(window.location.search || "");
@@ -853,11 +869,13 @@
     var form = $("dash-form");
     if (form) form.addEventListener("submit", onSaveDash);
     var bg = $("btn-gen-key");
+    var benter = $("btn-enter-key");
     var bpaste = $("btn-paste-key");
     var bk = $("btn-save-key");
     var bp = $("btn-push");
     var bl = $("btn-pull");
     if (bg) bg.addEventListener("click", onGenKey);
+    if (benter) benter.addEventListener("click", enterKeyViaPrompt);
     if (bpaste) bpaste.addEventListener("click", tryClipboardPasteIntoSyncKey);
     if (bk) bk.addEventListener("click", onSaveKey);
     if (bp) bp.addEventListener("click", onPush);
