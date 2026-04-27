@@ -62,7 +62,13 @@
         var key = SYNC.getLocalSyncKey();
         if (!ok || !key) return;
         var data = DS.load();
-        SYNC.push(key, data).catch(function () {});
+        SYNC.push(key, data)
+          .then(function () {
+            setHint("Cloud saved");
+          })
+          .catch(function (err) {
+            setHint("Cloud push failed: " + ((err && err.message) || "error"));
+          });
       });
     }, 1500);
   }
@@ -453,22 +459,25 @@
     SYNC.ready().then(function (ok) {
       if (!ok || !SYNC.getLocalSyncKey()) {
         renderSlideContent();
-        setHint("◀ ▶ Change slide · add sync key in Manage for cloud");
+        setHint("◀ ▶ Change slide · cloud off (missing config or key)");
         armRotate();
         return;
       }
-      SYNC.pull(SYNC.getLocalSyncKey())
+      var key = SYNC.getLocalSyncKey();
+      SYNC.pull(key)
         .then(function (remote) {
           if (remote && DS.isValidPayload(remote)) {
             DS.save(remote);
-            if (!silent) setHint("◀ ▶ Cloud updated");
+            if (!silent) setHint("Cloud updated");
+          } else if (!silent) {
+            setHint("Cloud empty for key");
           }
           renderSlideContent();
           armRotate();
         })
-        .catch(function () {
+        .catch(function (err) {
           renderSlideContent();
-          setHint("◀ ▶ Cloud unreachable — showing saved data");
+          setHint("Cloud pull failed: " + ((err && err.message) || "error"));
           armRotate();
         });
     });
