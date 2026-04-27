@@ -27,6 +27,50 @@
     return y + "-" + (m < 10 ? "0" : "") + m + "-" + (dd < 10 ? "0" : "") + dd;
   }
 
+  function copyScheduleItems(items) {
+    if (!Array.isArray(items)) return [];
+    return items.map(function (it) {
+      return { time: String((it && it.time) || ""), text: String((it && it.text) || "") };
+    });
+  }
+
+  // Returns index into WEEKDAYS (Mon=0..Sun=6) for the given date in the provided timezone.
+  function weeklyIndexForDateInTimeZone(date, timeZone) {
+    var tz = String(timeZone || "");
+    var wk;
+    try {
+      wk = date.toLocaleDateString("en-US", { weekday: "short", timeZone: tz || undefined });
+    } catch (e) {
+      wk = date.toLocaleDateString("en-US", { weekday: "short" });
+    }
+    // en-US weekday short: Mon, Tue, Wed, Thu, Fri, Sat, Sun
+    var i = WEEKDAYS.indexOf(wk);
+    if (i >= 0) return i;
+    return 0;
+  }
+
+  function deriveThreeDayScheduleFromWeekly(data) {
+    if (!data || !data.slides || !data.slides[0] || !data.slides[1]) return;
+    var master = data.slides[0];
+    var weekly = data.slides[1];
+    if (master.kind !== "master" || weekly.kind !== "weekly") return;
+    if (!Array.isArray(weekly.days) || weekly.days.length !== 7) return;
+    if (!Array.isArray(master.scheduleThreeDay) || master.scheduleThreeDay.length !== 3) return;
+
+    var tz = data.settings && data.settings.timeZone ? data.settings.timeZone : "";
+    var labels = ["Today", "Tomorrow", "Day after"];
+    var base = new Date();
+    var k;
+    for (k = 0; k < 3; k++) {
+      var d = new Date(base.getTime());
+      d.setDate(d.getDate() + k);
+      var wi = weeklyIndexForDateInTimeZone(d, tz);
+      var wd = weekly.days[wi];
+      master.scheduleThreeDay[k].dateLabel = labels[k] + (wd && wd.dayLabel ? " (" + wd.dayLabel + ")" : "");
+      master.scheduleThreeDay[k].items = copyScheduleItems(wd && wd.items);
+    }
+  }
+
   function uid() {
     if (global.crypto && global.crypto.randomUUID) return global.crypto.randomUUID();
     return "id-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 10);
@@ -378,6 +422,9 @@
     data.settings.rotationSec = sec;
     delete data.settings.rotationMs;
     data.version = 1;
+
+    // Slide 1 "Next 3 days" schedule is derived from the weekly schedule (slide 2).
+    deriveThreeDayScheduleFromWeekly(data);
 
     // Weekly rollover for "today chores": keep recurring, reset done, drop one-offs.
     if (data.settings.lastWeekId !== curWeek) {

@@ -381,22 +381,8 @@
     }
     html += "</div>";
 
-    html += '<div class="subsection"><h4>Next 3 days — schedule</h4>';
-    var si;
-    for (si = 0; si < 3; si++) {
-      html +=
-        '<div class="manage-row" style="align-items:flex-start"><label class="manage-label" for="m-sch-' +
-        si +
-        '-label">Day label</label><input class="manage-input" id="m-sch-' +
-        si +
-        '-label" type="text" /></div>' +
-        '<div class="manage-row" style="align-items:flex-start"><label class="manage-label" for="m-sch-' +
-        si +
-        '-lines">Events</label><textarea class="manage-input" id="m-sch-' +
-        si +
-        '-lines" rows="3" placeholder="9:00 — …"></textarea></div>';
-    }
-    html += "</div>";
+    html +=
+      '<div class="subsection"><h4>Next 3 days — schedule</h4><p class="manage-help tight">This view is auto-generated from <strong>Slide 2 — Weekly schedule</strong>.</p></div>';
 
     html += '<div class="subsection"><h4>Today’s chores</h4><p class="manage-help tight">If <strong>Recurring</strong> is checked, the chore resets at the start of the week. If not, it drops off next week.</p><div class="chore-today-grid">';
     var ci;
@@ -503,12 +489,7 @@
         condition: ($("m-fc-" + fi + "-cond") && $("m-fc-" + fi + "-cond").value) || "",
       };
     }
-    var si;
-    for (si = 0; si < 3; si++) {
-      m.scheduleThreeDay[si].dateLabel = ($("m-sch-" + si + "-label") && $("m-sch-" + si + "-label").value) || "";
-      var ta = $("m-sch-" + si + "-lines");
-      m.scheduleThreeDay[si].items = parseScheduleLines(ta ? ta.value : "");
-    }
+    // Next-3-day schedule is derived from the weekly schedule (slide 2).
     var prevList = m.choresToday || [];
     var chores = [];
     var ci;
@@ -613,12 +594,7 @@
       if ($("m-fc-" + fi + "-lo")) $("m-fc-" + fi + "-lo").value = f.low || "";
       if ($("m-fc-" + fi + "-cond")) $("m-fc-" + fi + "-cond").value = f.condition || "";
     }
-    var si;
-    for (si = 0; si < 3; si++) {
-      var d = m.scheduleThreeDay[si] || { dateLabel: "", items: [] };
-      if ($("m-sch-" + si + "-label")) $("m-sch-" + si + "-label").value = d.dateLabel || "";
-      if ($("m-sch-" + si + "-lines")) $("m-sch-" + si + "-lines").value = formatScheduleLines(d.items);
-    }
+    // Next-3-day schedule is derived from the weekly schedule (slide 2).
     var ci;
     for (ci = 0; ci < N_CHORE_TODAY; ci++) {
       var tx = $("m-chore-" + ci + "-text");
