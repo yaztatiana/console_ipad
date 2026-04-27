@@ -272,6 +272,27 @@
     showBanner("err", "Choose an .ics file or paste calendar text first.");
   }
 
+  function onCalendarImportUrlClick() {
+    var urlEl = $("ics-url");
+    var url = urlEl ? String(urlEl.value || "").trim() : "";
+    if (!url) {
+      showBanner("err", "Paste an iCal URL first.");
+      return;
+    }
+    showBanner("ok", "Fetching calendar…");
+    fetch(url, { cache: "no-store" })
+      .then(function (res) {
+        if (!res.ok) return res.text().then(function (t) { throw new Error(t || res.statusText); });
+        return res.text();
+      })
+      .then(function (text) {
+        runCalendarImportFromText(text);
+      })
+      .catch(function (err) {
+        showBanner("err", "Calendar URL fetch failed: " + ((err && err.message) || "error"));
+      });
+  }
+
   function addGroceryLineToSlot(slot) {
     var itemEl = $("qa-grocery-item");
     var line = itemEl ? itemEl.value.trim() : "";
@@ -882,6 +903,8 @@
     if (bl) bl.addEventListener("click", onPull);
     var bi = $("btn-ics-import");
     if (bi) bi.addEventListener("click", onCalendarImportClick);
+    var biu = $("btn-ics-import-url");
+    if (biu) biu.addEventListener("click", onCalendarImportUrlClick);
     var bq = $("btn-qa-grocery");
     if (bq) {
       bq.addEventListener("click", function () {

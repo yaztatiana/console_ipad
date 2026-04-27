@@ -77,24 +77,6 @@
         <p class="manage-help">Use these shortcuts, then <strong>Save dashboard</strong> (or Push). Imports merge with what is already in the slide editors below.</p>
 
         <div class="hub-block">
-          <h3 class="hub-h3">Calendar events (.ics)</h3>
-          <p class="manage-help tight">Export from Google Calendar, Apple Calendar, etc. Files are read in the browser only—nothing is uploaded to a server.</p>
-          <div class="manage-row">
-            <label class="manage-label" for="ics-file">Upload file</label>
-            <input class="manage-input" type="file" id="ics-file" accept=".ics,.ical,.ifb,text/calendar" />
-          </div>
-          <div class="manage-row" style="align-items: flex-start">
-            <label class="manage-label" for="ics-paste">Or paste</label>
-            <textarea class="manage-input" id="ics-paste" rows="4" placeholder="BEGIN:VCALENDAR&#10;BEGIN:VEVENT&#10;..."></textarea>
-          </div>
-          <div class="hub-checks">
-            <label class="chk"><input type="checkbox" id="ics-target-master" checked /> Merge into <strong>slide 1</strong> — next 3 days</label>
-            <label class="chk"><input type="checkbox" id="ics-target-weekly" checked /> Merge into <strong>slide 2</strong> — weekly schedule</label>
-          </div>
-          <button type="button" class="btn btn-primary" id="btn-ics-import">Import calendar events</button>
-        </div>
-
-        <div class="hub-block">
           <h3 class="hub-h3">Grocery list</h3>
           <div class="manage-row hub-inline">
             <label class="manage-label" for="qa-grocery-slot">List</label>
@@ -129,6 +111,33 @@
               <label class="chk chk-dow"><input type="checkbox" id="qa-wd-6" />S</label>
             </span>
             <button type="button" class="btn" id="btn-qa-chore-weekly">Add to chart</button>
+          </div>
+        </div>
+
+        <div class="hub-block">
+          <h3 class="hub-h3">Calendar events (iCalendar / Google Calendar)</h3>
+          <p class="manage-help tight">
+            Google Calendar: use <strong>Settings → “Secret address in iCal format”</strong> (calendar must be shareable to you). Apple Calendar exports are also iCalendar.
+          </p>
+          <div class="manage-row">
+            <label class="manage-label" for="ics-file">Upload .ics</label>
+            <input class="manage-input" type="file" id="ics-file" accept=".ics,.ical,.ifb,text/calendar" />
+          </div>
+          <div class="manage-row" style="align-items: flex-start">
+            <label class="manage-label" for="ics-paste">Or paste</label>
+            <textarea class="manage-input" id="ics-paste" rows="4" placeholder="BEGIN:VCALENDAR&#10;BEGIN:VEVENT&#10;..."></textarea>
+          </div>
+          <div class="manage-row">
+            <label class="manage-label" for="ics-url">Or iCal URL</label>
+            <input class="manage-input manage-input-wide" id="ics-url" type="url" placeholder="https://calendar.google.com/calendar/ical/..." />
+          </div>
+          <div class="hub-checks">
+            <label class="chk"><input type="checkbox" id="ics-target-master" checked /> Merge into <strong>slide 1</strong> — next 3 days</label>
+            <label class="chk"><input type="checkbox" id="ics-target-weekly" checked /> Merge into <strong>slide 2</strong> — weekly schedule</label>
+          </div>
+          <div class="manage-actions">
+            <button type="button" class="btn btn-primary" id="btn-ics-import">Import</button>
+            <button type="button" class="btn" id="btn-ics-import-url">Import from URL</button>
           </div>
         </div>
       </section>
