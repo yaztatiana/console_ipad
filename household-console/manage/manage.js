@@ -669,10 +669,26 @@
     e.preventDefault();
     var data = readFormIntoData();
     saveLocal(data);
-    showBanner("ok", "Dashboard saved on this browser.");
-    window.setTimeout(function () {
-      showBanner("", "");
-    }, 3500);
+    var key = SYNC.getLocalSyncKey();
+    SYNC.ready()
+      .then(function (ok) {
+        if (!ok || !key) {
+          showBanner("ok", "Saved on this browser. (Cloud is off — add sync config + key to sync.)");
+          return false;
+        }
+        return SYNC.push(key, data).then(function () {
+          showBanner("ok", "Saved locally and pushed to cloud.");
+          return true;
+        });
+      })
+      .catch(function (err) {
+        showBanner("err", "Saved locally, but cloud push failed: " + ((err && err.message) || "error"));
+      })
+      .finally(function () {
+        window.setTimeout(function () {
+          showBanner("", "");
+        }, 5000);
+      });
   }
 
   function onGenKey() {

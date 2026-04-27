@@ -529,7 +529,7 @@
   function init() {
     renderSlideContent();
     setSlide(0);
-    pullThenRender(true);
+    pullThenRender(false);
     if (pollTimer) clearInterval(pollTimer);
     pollTimer = window.setInterval(function () {
       pullThenRender(true);
