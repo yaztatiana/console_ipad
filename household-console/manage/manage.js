@@ -402,10 +402,13 @@
     }
     html += "</div>";
 
-    html +=
-      '<div class="subsection"><h4>Next 3 days — schedule</h4><p class="manage-help tight">This view is auto-generated from <strong>Slide 2 — Weekly schedule</strong>.</p></div>';
+    html += '<div class="slide1-two-col">';
 
-    html += '<div class="subsection"><h4>Today’s chores</h4><p class="manage-help tight">If <strong>Recurring</strong> is checked, the chore resets at the start of the week. If not, it drops off next week.</p><div class="chore-today-grid">';
+    html +=
+      '<div class="subsection slide1-col"><h4>Next 3 days — schedule</h4><p class="manage-help tight">This view is auto-generated from <strong>Slide 2 — Weekly schedule</strong>.</p></div>';
+
+    html +=
+      '<div class="subsection slide1-col"><h4>Today’s chores</h4><p class="manage-help tight">If <strong>Recurring</strong> is checked, the chore resets at the start of the week. If not, it drops off next week.</p><div class="chore-today-grid">';
     var ci;
     for (ci = 0; ci < N_CHORE_TODAY; ci++) {
       html +=
@@ -422,7 +425,7 @@
         ci +
         '-rec" /> Recurring</label></div>';
     }
-    html += "</div></div></div>";
+    html += "</div></div></div></div>";
 
     html +=
       '<div class="slide-card">' +
@@ -671,7 +674,7 @@
   function fillForm(data) {
     data = DS.ensureFourSlides(data);
     if ($("setting-title")) $("setting-title").value = data.settings.title || "";
-    if ($("setting-theme")) $("setting-theme").value = data.settings.themeId || "neon-kiosk";
+    if ($("setting-theme")) $("setting-theme").value = data.settings.themeId || "pastel-prism";
     if ($("setting-banner")) $("setting-banner").value = data.settings.bannerMessage || "";
     if ($("setting-zip")) $("setting-zip").value = data.settings.zip || "84010";
     if ($("setting-timezone")) $("setting-timezone").value = data.settings.timeZone || "America/Denver";
@@ -796,6 +799,12 @@
       })
       .then(function (remote) {
         if (remote && DS.isValidPayload(remote)) {
+          // Theme is a local display preference; don't let cloud pulls override it.
+          try {
+            var local = DS.load();
+            if (!remote.settings || typeof remote.settings !== "object") remote.settings = {};
+            if (local && local.settings && local.settings.themeId) remote.settings.themeId = local.settings.themeId;
+          } catch (e) {}
           DS.save(remote);
           fillForm(DS.load());
           showBanner("ok", "Pulled from cloud and applied.");

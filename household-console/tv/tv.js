@@ -468,6 +468,12 @@
       SYNC.pull(key)
         .then(function (remote) {
           if (remote && DS.isValidPayload(remote)) {
+            // Theme is a local display preference; don't let cloud pulls override it.
+            try {
+              var local = DS.load();
+              if (!remote.settings || typeof remote.settings !== "object") remote.settings = {};
+              if (local && local.settings && local.settings.themeId) remote.settings.themeId = local.settings.themeId;
+            } catch (e) {}
             DS.save(remote);
             if (!silent) setHint("Cloud updated");
           } else if (!silent) {

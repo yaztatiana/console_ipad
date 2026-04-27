@@ -229,7 +229,240 @@
 
 /* ————————— Academia Ledger (stub) ————————— */
 .theme.theme-academia-ledger {
-  /* TODO */
+  --bg0: #0b0a08;
+  --bg1: #15110d;
+  --text: rgba(244, 233, 214, 0.93);
+  --muted: rgba(244, 233, 214, 0.68);
+  --line: rgba(189, 160, 120, 0.22);
+  --panel: rgba(244, 233, 214, 0.92);
+  --panel2: rgba(244, 233, 214, 0.84);
+  --shadow: rgba(0, 0, 0, 0.35);
+  --accent: #c7a46b; /* brass */
+  --accent2: #7e5a3b; /* leather */
+  --gold: rgba(211, 176, 112, 0.95);
+  --ink: rgba(30, 22, 16, 0.92);
+  --paper: rgba(244, 233, 214, 0.94);
+  --paper-edge: rgba(214, 190, 154, 0.55);
+  --paper-rule: rgba(128, 98, 68, 0.20);
+  --wood0: #120c09;
+  --wood1: #0b0706;
+  --leather0: rgba(62, 38, 26, 0.92);
+  --leather1: rgba(36, 22, 16, 0.92);
+  --ink2: rgba(92, 63, 41, 0.75);
+}
+
+.theme.theme-academia-ledger.tv-body,
+.theme.theme-academia-ledger.manage-body {
+  color: var(--text);
+  background:
+    /* bookshelf shadow + vignette */
+    radial-gradient(900px 620px at 18% 22%, rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0) 60%),
+    radial-gradient(1000px 720px at 78% 25%, rgba(0, 0, 0, 0.22), rgba(0, 0, 0, 0) 62%),
+    radial-gradient(1200px 880px at 50% 60%, rgba(0, 0, 0, 0.38), rgba(0, 0, 0, 0) 68%),
+    /* desk leather runner */
+    linear-gradient(180deg, rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0) 32%),
+    /* wood base */
+    repeating-linear-gradient(
+      98deg,
+      rgba(35, 18, 12, 0.55) 0 16px,
+      rgba(18, 10, 8, 0.55) 16px 34px,
+      rgba(38, 20, 13, 0.55) 34px 54px
+    ),
+    linear-gradient(135deg, var(--wood0), var(--wood1));
+}
+
+.theme.theme-academia-ledger.tv-body::before,
+.theme.theme-academia-ledger.manage-body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.75;
+  background:
+    /* paper fiber */
+    radial-gradient(circle at 10% 22%, rgba(255, 255, 255, 0.06) 0 1px, rgba(255, 255, 255, 0) 1px 9px),
+    radial-gradient(circle at 70% 40%, rgba(255, 255, 255, 0.05) 0 1px, rgba(255, 255, 255, 0) 1px 10px),
+    /* subtle dust */
+    radial-gradient(2px 2px at 22% 18%, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0) 60%),
+    radial-gradient(2px 2px at 56% 62%, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0) 60%),
+    radial-gradient(2px 2px at 84% 34%, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0) 60%);
+  mix-blend-mode: soft-light;
+}
+
+.theme.theme-academia-ledger .tv-header,
+.theme.theme-academia-ledger .tv-footer,
+.theme.theme-academia-ledger .kiosk-topbar {
+  border-color: rgba(189, 160, 120, 0.18);
+}
+
+.theme.theme-academia-ledger .tv-title,
+.theme.theme-academia-ledger .manage-h1,
+.theme.theme-academia-ledger .kiosk-label {
+  color: rgba(255, 246, 229, 0.92);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
+}
+
+.theme.theme-academia-ledger .slide-heading {
+  color: rgba(255, 246, 229, 0.95);
+  letter-spacing: 0.02em;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
+}
+
+.theme.theme-academia-ledger .block-title {
+  color: rgba(92, 63, 41, 0.72);
+  letter-spacing: 0.10em;
+}
+
+/* Paper cards on a desk */
+.theme.theme-academia-ledger .hub-block,
+.theme.theme-academia-ledger .kiosk-panel,
+.theme.theme-academia-ledger .slide-card,
+.theme.theme-academia-ledger .weekly-col,
+.theme.theme-academia-ledger .shopping-list,
+.theme.theme-academia-ledger .master-weather,
+.theme.theme-academia-ledger .master-forecast,
+.theme.theme-academia-ledger .master-chores {
+  position: relative;
+  color: var(--ink);
+  background:
+    /* paper tone + gentle stains */
+    radial-gradient(900px 460px at 16% 18%, rgba(189, 160, 120, 0.18), rgba(189, 160, 120, 0) 60%),
+    radial-gradient(820px 420px at 82% 72%, rgba(126, 90, 59, 0.10), rgba(126, 90, 59, 0) 62%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.58)),
+    linear-gradient(180deg, var(--paper), var(--panel2));
+  border: 1px solid rgba(189, 160, 120, 0.28);
+  border-radius: 16px;
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.42),
+    0 1px 0 rgba(255, 255, 255, 0.55) inset;
+}
+
+.theme.theme-academia-ledger .hub-block::before,
+.theme.theme-academia-ledger .kiosk-panel::before,
+.theme.theme-academia-ledger .slide-card::before,
+.theme.theme-academia-ledger .weekly-col::before,
+.theme.theme-academia-ledger .shopping-list::before,
+.theme.theme-academia-ledger .master-weather::before,
+.theme.theme-academia-ledger .master-forecast::before,
+.theme.theme-academia-ledger .master-chores::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  pointer-events: none;
+  background:
+    /* faint ledger rules */
+    repeating-linear-gradient(180deg, rgba(128, 98, 68, 0.10) 0 1px, rgba(128, 98, 68, 0) 1px 26px),
+    /* margin line */
+    linear-gradient(90deg, rgba(176, 126, 84, 0.0) 0 44px, rgba(176, 126, 84, 0.18) 44px 46px, rgba(176, 126, 84, 0) 46px 100%),
+    /* paper edge shading */
+    linear-gradient(180deg, rgba(214, 190, 154, 0.55), rgba(214, 190, 154, 0) 22%),
+    linear-gradient(0deg, rgba(214, 190, 154, 0.55), rgba(214, 190, 154, 0) 22%);
+  mix-blend-mode: multiply;
+  opacity: 0.65;
+}
+
+.theme.theme-academia-ledger .hub-block::after,
+.theme.theme-academia-ledger .kiosk-panel::after,
+.theme.theme-academia-ledger .slide-card::after,
+.theme.theme-academia-ledger .weekly-col::after,
+.theme.theme-academia-ledger .shopping-list::after,
+.theme.theme-academia-ledger .master-weather::after,
+.theme.theme-academia-ledger .master-forecast::after,
+.theme.theme-academia-ledger .master-chores::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  pointer-events: none;
+  background:
+    /* leather corner tabs */
+    radial-gradient(18px 18px at 0% 0%, rgba(62, 38, 26, 0.62) 0 70%, rgba(62, 38, 26, 0) 72%),
+    radial-gradient(18px 18px at 100% 0%, rgba(62, 38, 26, 0.52) 0 70%, rgba(62, 38, 26, 0) 72%),
+    radial-gradient(18px 18px at 0% 100%, rgba(62, 38, 26, 0.52) 0 70%, rgba(62, 38, 26, 0) 72%),
+    radial-gradient(18px 18px at 100% 100%, rgba(62, 38, 26, 0.62) 0 70%, rgba(62, 38, 26, 0) 72%),
+    /* brass pinheads */
+    radial-gradient(circle at 12px 12px, rgba(211, 176, 112, 0.95) 0 2px, rgba(211, 176, 112, 0) 3px),
+    radial-gradient(circle at calc(100% - 12px) 12px, rgba(211, 176, 112, 0.9) 0 2px, rgba(211, 176, 112, 0) 3px),
+    radial-gradient(circle at 12px calc(100% - 12px), rgba(211, 176, 112, 0.9) 0 2px, rgba(211, 176, 112, 0) 3px),
+    radial-gradient(circle at calc(100% - 12px) calc(100% - 12px), rgba(211, 176, 112, 0.95) 0 2px, rgba(211, 176, 112, 0) 3px);
+  opacity: 0.9;
+  mix-blend-mode: multiply;
+}
+
+.theme.theme-academia-ledger .hub-block > *,
+.theme.theme-academia-ledger .kiosk-panel > *,
+.theme.theme-academia-ledger .slide-card > *,
+.theme.theme-academia-ledger .weekly-col > *,
+.theme.theme-academia-ledger .shopping-list > *,
+.theme.theme-academia-ledger .master-weather > *,
+.theme.theme-academia-ledger .master-forecast > *,
+.theme.theme-academia-ledger .master-chores > * {
+  position: relative;
+  z-index: 1;
+}
+
+.theme.theme-academia-ledger .tv-datetime {
+  color: rgba(255, 246, 229, 0.90);
+  border-color: rgba(189, 160, 120, 0.25);
+  background: linear-gradient(180deg, rgba(62, 38, 26, 0.72), rgba(36, 22, 16, 0.72));
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25) inset, 0 10px 26px rgba(0, 0, 0, 0.28);
+}
+
+.theme.theme-academia-ledger .btn,
+.theme.theme-academia-ledger .manage-link,
+.theme.theme-academia-ledger .tv-manage,
+.theme.theme-academia-ledger .kiosk-tab {
+  color: rgba(255, 246, 229, 0.90);
+  border-color: rgba(189, 160, 120, 0.32);
+  background: linear-gradient(180deg, rgba(62, 38, 26, 0.70), rgba(36, 22, 16, 0.70));
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.22) inset;
+}
+
+.theme.theme-academia-ledger .btn:hover,
+.theme.theme-academia-ledger .manage-link:hover,
+.theme.theme-academia-ledger .tv-manage:hover,
+.theme.theme-academia-ledger .kiosk-tab:hover {
+  border-color: rgba(211, 176, 112, 0.55);
+}
+
+.theme.theme-academia-ledger .btn-primary {
+  border-color: rgba(211, 176, 112, 0.60);
+  background: linear-gradient(90deg, rgba(211, 176, 112, 0.36), rgba(126, 90, 59, 0.26));
+}
+
+.theme.theme-academia-ledger .manage-input {
+  color: var(--ink);
+  border-color: rgba(189, 160, 120, 0.32);
+  background: rgba(244, 233, 214, 0.92);
+}
+
+.theme.theme-academia-ledger .manage-help,
+.theme.theme-academia-ledger .manage-status,
+.theme.theme-academia-ledger .manage-hint,
+.theme.theme-academia-ledger .tv-hint,
+.theme.theme-academia-ledger .muted {
+  color: rgba(255, 246, 229, 0.70);
+}
+
+.theme.theme-academia-ledger .tv-banner {
+  background: linear-gradient(90deg, rgba(211, 176, 112, 0.22), rgba(62, 38, 26, 0.18));
+  border-color: rgba(189, 160, 120, 0.22);
+}
+
+.theme.theme-academia-ledger .tv-banner-text {
+  color: rgba(255, 246, 229, 0.92);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
+}
+
+.theme.theme-academia-ledger .btn:focus-visible,
+.theme.theme-academia-ledger .manage-link:focus-visible,
+.theme.theme-academia-ledger .tv-manage:focus-visible,
+.theme.theme-academia-ledger .slide:focus-visible,
+.theme.theme-academia-ledger .shopping-item:focus-visible,
+.theme.theme-academia-ledger .chore-item:focus-visible,
+.theme.theme-academia-ledger .chore-mark:focus-visible {
+  outline-color: rgba(211, 176, 112, 0.8);
 }
 
 .theme.theme-neon-kiosk.tv-body,
@@ -299,6 +532,7 @@
 }
 
 .theme.theme-neon-kiosk .hub-block,
+.theme.theme-neon-kiosk .kiosk-panel,
 .theme.theme-neon-kiosk .slide-card,
 .theme.theme-neon-kiosk .weekly-col,
 .theme.theme-neon-kiosk .shopping-list,
@@ -324,4 +558,162 @@
 .theme.theme-neon-kiosk .tv-banner {
   background: linear-gradient(90deg, rgba(255, 43, 214, 0.28), rgba(0, 245, 255, 0.20));
   border-color: rgba(255, 255, 255, 0.14);
+}
+
+/* Neon Kiosk — frame system (sci‑fi cyan panels) */
+.theme.theme-neon-kiosk {
+  --nk-frame: rgba(0, 245, 255, 0.55);
+  --nk-frame-soft: rgba(125, 240, 255, 0.22);
+  --nk-frame-dim: rgba(0, 245, 255, 0.18);
+  --nk-frame-ink: rgba(10, 6, 18, 0.68);
+}
+
+.theme.theme-neon-kiosk .hub-block,
+.theme.theme-neon-kiosk .kiosk-panel,
+.theme.theme-neon-kiosk .slide-card,
+.theme.theme-neon-kiosk .weekly-col,
+.theme.theme-neon-kiosk .shopping-list,
+.theme.theme-neon-kiosk .master-weather,
+.theme.theme-neon-kiosk .master-forecast,
+.theme.theme-neon-kiosk .master-chores {
+  position: relative;
+  border-radius: 0;
+  border: 0;
+  overflow: hidden;
+  background: rgba(10, 6, 18, 0.56);
+  clip-path: polygon(
+    22px 0%,
+    calc(100% - 22px) 0%,
+    100% 22px,
+    100% calc(100% - 28px),
+    calc(100% - 28px) 100%,
+    28px 100%,
+    0% calc(100% - 22px),
+    0% 22px
+  );
+}
+
+.theme.theme-neon-kiosk .hub-block::before,
+.theme.theme-neon-kiosk .kiosk-panel::before,
+.theme.theme-neon-kiosk .slide-card::before,
+.theme.theme-neon-kiosk .weekly-col::before,
+.theme.theme-neon-kiosk .shopping-list::before,
+.theme.theme-neon-kiosk .master-weather::before,
+.theme.theme-neon-kiosk .master-forecast::before,
+.theme.theme-neon-kiosk .master-chores::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    /* inner glass */
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02)),
+    /* top edge + corner breaks */
+    linear-gradient(90deg, transparent 0 18px, var(--nk-frame) 18px calc(100% - 18px), transparent calc(100% - 18px)),
+    /* left edge */
+    linear-gradient(180deg, transparent 0 18px, var(--nk-frame-soft) 18px calc(100% - 18px), transparent calc(100% - 18px)),
+    /* right edge */
+    linear-gradient(180deg, transparent 0 18px, var(--nk-frame-soft) 18px calc(100% - 18px), transparent calc(100% - 18px)),
+    /* bottom edge */
+    linear-gradient(90deg, transparent 0 26px, var(--nk-frame-soft) 26px calc(100% - 26px), transparent calc(100% - 26px));
+  background-size:
+    100% 100%,
+    100% 2px,
+    2px 100%,
+    2px 100%,
+    100% 2px;
+  background-position:
+    0 0,
+    0 0,
+    0 0,
+    100% 0,
+    0 100%;
+  background-repeat: no-repeat;
+  box-shadow:
+    0 22px 70px rgba(0, 0, 0, 0.38),
+    0 0 0 1px rgba(0, 245, 255, 0.10) inset,
+    0 0 26px rgba(0, 245, 255, 0.10);
+}
+
+.theme.theme-neon-kiosk .hub-block::after,
+.theme.theme-neon-kiosk .kiosk-panel::after,
+.theme.theme-neon-kiosk .slide-card::after,
+.theme.theme-neon-kiosk .weekly-col::after,
+.theme.theme-neon-kiosk .shopping-list::after,
+.theme.theme-neon-kiosk .master-weather::after,
+.theme.theme-neon-kiosk .master-forecast::after,
+.theme.theme-neon-kiosk .master-chores::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.95;
+  background:
+    /* top center "notch" */
+    linear-gradient(90deg, transparent 0 42%, var(--nk-frame) 42% 58%, transparent 58% 100%),
+    /* top right dotted run */
+    radial-gradient(circle, rgba(0, 245, 255, 0.65) 0 1.1px, rgba(0, 245, 255, 0) 1.2px 5px),
+    /* top-left hazard ticks */
+    repeating-linear-gradient(120deg, rgba(0, 245, 255, 0.50) 0 5px, rgba(0, 245, 255, 0) 5px 11px),
+    /* right-side slashes */
+    repeating-linear-gradient(160deg, rgba(0, 245, 255, 0.35) 0 2px, rgba(0, 245, 255, 0) 2px 8px);
+  background-size:
+    100% 2px,
+    64px 10px,
+    54px 10px,
+    12px 48px;
+  background-position:
+    0 14px,
+    calc(100% - 34px) 22px,
+    22px 12px,
+    calc(100% - 16px) 46%;
+  background-repeat: no-repeat;
+  filter: drop-shadow(0 0 10px rgba(0, 245, 255, 0.18));
+  mix-blend-mode: screen;
+}
+
+/* Keep text above decorative layers */
+.theme.theme-neon-kiosk .hub-block > *,
+.theme.theme-neon-kiosk .kiosk-panel > *,
+.theme.theme-neon-kiosk .slide-card > *,
+.theme.theme-neon-kiosk .weekly-col > *,
+.theme.theme-neon-kiosk .shopping-list > *,
+.theme.theme-neon-kiosk .master-weather > *,
+.theme.theme-neon-kiosk .master-forecast > *,
+.theme.theme-neon-kiosk .master-chores > * {
+  position: relative;
+  z-index: 1;
+}
+
+.theme.theme-neon-kiosk .tv-datetime {
+  position: relative;
+  border: 0;
+  background: rgba(10, 6, 18, 0.55);
+  padding: 0.42rem 0.75rem;
+  clip-path: polygon(
+    16px 0%,
+    calc(100% - 16px) 0%,
+    100% 16px,
+    100% calc(100% - 16px),
+    calc(100% - 16px) 100%,
+    16px 100%,
+    0% calc(100% - 16px),
+    0% 16px
+  );
+  box-shadow: 0 0 0 1px rgba(0, 245, 255, 0.22) inset, 0 0 18px rgba(0, 245, 255, 0.08);
+}
+
+.theme.theme-neon-kiosk .tv-datetime::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, transparent 0 18px, rgba(0, 245, 255, 0.55) 18px calc(100% - 18px), transparent calc(100% - 18px)),
+    repeating-linear-gradient(120deg, rgba(0, 245, 255, 0.45) 0 5px, rgba(0, 245, 255, 0) 5px 11px);
+  background-size: 100% 2px, 54px 10px;
+  background-position: 0 0, 20px 10px;
+  background-repeat: no-repeat;
+  opacity: 0.9;
+  mix-blend-mode: screen;
 }

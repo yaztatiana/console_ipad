@@ -7,10 +7,10 @@
      try {
        var data = DS && DS.load ? DS.load() : null;
        var tid = data && data.settings ? String(data.settings.themeId || "") : "";
-       if (!tid) return "neon-kiosk";
+      if (!tid) return "pastel-prism";
        return tid;
      } catch (e) {
-       return "neon-kiosk";
+      return "pastel-prism";
      }
    }
  

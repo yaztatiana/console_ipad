@@ -350,6 +350,28 @@
   min-width: 2.5rem;
 }
 
+.slide1-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem 1rem;
+  align-items: start;
+}
+
+.slide1-two-col .subsection {
+  margin: 0.25rem 0 0;
+}
+
+.slide1-two-col .subsection:first-of-type {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 0.75rem;
+}
+
+@media (max-width: 860px) {
+  .slide1-two-col {
+    grid-template-columns: 1fr;
+  }
+}
+
 .chore-today-row {
   display: flex;
   flex-wrap: wrap;
