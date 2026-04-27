@@ -104,6 +104,33 @@
   box-shadow: 0 14px 40px var(--shadow);
 }
 
+/* Decorative frames (drop PNGs into household-console/assets/pastel-prism/ ) */
+.theme.theme-pastel-prism .slide-weekly .weekly-col {
+  position: relative;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 2.6rem 1.05rem 1.15rem;
+}
+
+.theme.theme-pastel-prism .slide-weekly .weekly-col::before {
+  content: "";
+  position: absolute;
+  inset: -0.35rem;
+  background: url("/assets/pastel-prism/frame-rect.png") center / contain no-repeat;
+  pointer-events: none;
+  filter: drop-shadow(0 16px 34px rgba(64, 22, 92, 0.16));
+}
+
+.theme.theme-pastel-prism .slide-weekly .weekly-col > * {
+  position: relative;
+  z-index: 1;
+}
+
+.theme.theme-pastel-prism .slide-weekly .weekly-col-head {
+  border-bottom-color: rgba(170, 120, 190, 0.18);
+}
+
 .theme.theme-pastel-prism .forecast-row {
   border-bottom-color: rgba(170, 120, 190, 0.16);
 }
