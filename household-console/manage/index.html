@@ -8,152 +8,181 @@
     <link rel="stylesheet" href="/shared/theme.css" />
     <link rel="stylesheet" href="/manage/manage.css" />
   </head>
-  <body class="manage-body theme theme-pastel-prism">
-    <header class="manage-header">
-      <div>
-        <h1 class="manage-h1">Dashboard management</h1>
-        <p class="manage-lead">
-          Four fixed templates: today’s overview (weather, forecast, 3-day schedule, chores), weekly schedule, weekly chore chart, and shopping lists (Amazon linking later).
-        </p>
+  <body class="manage-body theme">
+    <header class="kiosk-topbar">
+      <div class="kiosk-titlebox">
+        <label class="kiosk-label" for="setting-title">Title</label>
+        <input class="manage-input kiosk-titleinput" id="setting-title" type="text" autocomplete="off" />
       </div>
-      <nav class="manage-nav">
-        <a class="manage-link" href="/tv/">Open TV view</a>
-        <a class="manage-link" href="/">Home</a>
+      <nav class="kiosk-tabs" aria-label="Management tabs">
+        <button type="button" class="kiosk-tab is-active" data-tab="title" aria-controls="panel-title" aria-selected="true">Title</button>
+        <button type="button" class="kiosk-tab" data-tab="sync" aria-controls="panel-sync" aria-selected="false">Sync</button>
+        <button type="button" class="kiosk-tab" data-tab="library" aria-controls="panel-library" aria-selected="false">Library</button>
+        <button type="button" class="kiosk-tab" data-tab="settings" aria-controls="panel-settings" aria-selected="false">Settings</button>
       </nav>
     </header>
 
     <div class="manage-banner" id="banner" role="status" aria-live="polite"></div>
 
-    <section class="manage-section">
-      <h2>Cloud sync</h2>
-      <p class="manage-help">Set Amplify env vars or <code>shared/sync-config.json</code>; one sync key per household.</p>
-      <div class="manage-row">
-        <label class="manage-label" for="sync-key">Sync key</label>
-        <input class="manage-input manage-input-wide" id="sync-key" type="text" autocomplete="off" spellcheck="false" placeholder="Paste or generate a key" />
-      </div>
-      <div class="manage-actions">
-        <button type="button" class="btn" id="btn-gen-key">Generate new key</button>
-        <button type="button" class="btn" id="btn-enter-key">Enter / paste key</button>
-        <button type="button" class="btn" id="btn-paste-key">Paste key</button>
-        <button type="button" class="btn" id="btn-save-key">Save key on this device</button>
-        <button type="button" class="btn btn-primary" id="btn-push">Push to cloud</button>
-        <button type="button" class="btn" id="btn-pull">Pull from cloud</button>
-      </div>
-      <p class="manage-status" id="sync-status"></p>
-    </section>
+    <form id="dash-form" class="kiosk-form">
+      <main class="kiosk-stage">
+        <section class="kiosk-panel is-active" id="panel-title" data-panel="title">
+          <div class="manage-row kiosk-links">
+            <a class="manage-link" href="/tv/">Open TV view</a>
+            <a class="manage-link" href="/">Home</a>
+          </div>
 
-    <section class="manage-section">
-      <h2>Display settings</h2>
-      <div class="manage-row">
-        <label class="manage-label" for="setting-title">Title (TV header)</label>
-        <input class="manage-input" id="setting-title" type="text" />
-      </div>
-      <div class="manage-row">
-        <label class="manage-label" for="setting-zip">ZIP / postal code</label>
-        <input class="manage-input manage-input-narrow" id="setting-zip" type="text" inputmode="numeric" placeholder="84010" />
-        <span class="manage-hint">Used for weather + timezone</span>
-      </div>
-      <div class="manage-row">
-        <label class="manage-label" for="setting-timezone">Timezone</label>
-        <input class="manage-input" id="setting-timezone" type="text" placeholder="America/Denver" />
-      </div>
-      <div class="manage-row">
-        <label class="manage-label" for="setting-auto-weather">Auto weather</label>
-        <label class="chk"><input type="checkbox" id="setting-auto-weather" checked /> Enable</label>
-      </div>
-      <div class="manage-row" style="align-items:flex-start">
-        <label class="manage-label" for="setting-banner">Top banner message</label>
-        <textarea class="manage-input" id="setting-banner" rows="2" placeholder="Leave a message…"></textarea>
-      </div>
-      <div class="manage-row">
-        <label class="manage-label" for="setting-rotation">Slide rotation (seconds)</label>
-        <input class="manage-input manage-input-narrow" id="setting-rotation" type="number" min="3" max="120" step="1" />
-        <span class="manage-hint">3–120</span>
-      </div>
-    </section>
+          <section class="manage-section hub-section">
+            <h2>Add &amp; import</h2>
+            <p class="manage-help">Use these shortcuts, then <strong>Save dashboard</strong>. Imports merge with what is already in the slide editors below.</p>
 
-    <form id="dash-form" class="manage-form">
-      <section class="manage-section hub-section">
-        <h2>Add &amp; import</h2>
-        <p class="manage-help">Use these shortcuts, then <strong>Save dashboard</strong> (or Push). Imports merge with what is already in the slide editors below.</p>
+            <div class="hub-block">
+              <h3 class="hub-h3">Grocery list</h3>
+              <div class="manage-row hub-inline">
+                <label class="manage-label" for="qa-grocery-slot">List</label>
+                <select class="manage-input manage-input-narrow" id="qa-grocery-slot" aria-label="Which grocery list">
+                  <option value="0">List 1</option>
+                  <option value="1">List 2</option>
+                  <option value="2">List 3</option>
+                  <option value="3">List 4</option>
+                </select>
+                <input class="manage-input" id="qa-grocery-item" type="text" placeholder="e.g. Milk, eggs" autocomplete="off" />
+                <button type="button" class="btn" id="btn-qa-grocery">Add item</button>
+              </div>
+            </div>
 
-        <div class="hub-block">
-          <h3 class="hub-h3">Grocery list</h3>
-          <div class="manage-row hub-inline">
-            <label class="manage-label" for="qa-grocery-slot">List</label>
-            <select class="manage-input manage-input-narrow" id="qa-grocery-slot" aria-label="Which grocery list">
-              <option value="0">List 1</option>
-              <option value="1">List 2</option>
-              <option value="2">List 3</option>
-              <option value="3">List 4</option>
-            </select>
-            <input class="manage-input" id="qa-grocery-item" type="text" placeholder="e.g. Milk, eggs" autocomplete="off" />
-            <button type="button" class="btn" id="btn-qa-grocery">Add item</button>
-          </div>
-        </div>
+            <div class="hub-block">
+              <h3 class="hub-h3">Chores</h3>
+              <div class="manage-row hub-inline">
+                <label class="manage-label" for="qa-chore-today-text">Today (TV)</label>
+                <input class="manage-input" id="qa-chore-today-text" type="text" placeholder="Chore for today’s slide" autocomplete="off" />
+                <button type="button" class="btn" id="btn-qa-chore-today">Add</button>
+              </div>
+              <p class="manage-help tight">Weekly chart — check days this chore is due, then add.</p>
+              <div class="manage-row hub-inline hub-wrap">
+                <input class="manage-input chore-name-input" id="qa-weekly-chore-name" type="text" placeholder="Chore name" autocomplete="off" />
+                <span class="qa-dow-group" aria-label="Days due">
+                  <label class="chk chk-dow"><input type="checkbox" id="qa-wd-0" />M</label>
+                  <label class="chk chk-dow"><input type="checkbox" id="qa-wd-1" />T</label>
+                  <label class="chk chk-dow"><input type="checkbox" id="qa-wd-2" />W</label>
+                  <label class="chk chk-dow"><input type="checkbox" id="qa-wd-3" />T</label>
+                  <label class="chk chk-dow"><input type="checkbox" id="qa-wd-4" />F</label>
+                  <label class="chk chk-dow"><input type="checkbox" id="qa-wd-5" />S</label>
+                  <label class="chk chk-dow"><input type="checkbox" id="qa-wd-6" />S</label>
+                </span>
+                <button type="button" class="btn" id="btn-qa-chore-weekly">Add to chart</button>
+              </div>
+            </div>
 
-        <div class="hub-block">
-          <h3 class="hub-h3">Chores</h3>
-          <div class="manage-row hub-inline">
-            <label class="manage-label" for="qa-chore-today-text">Today (TV)</label>
-            <input class="manage-input" id="qa-chore-today-text" type="text" placeholder="Chore for today’s slide" autocomplete="off" />
-            <button type="button" class="btn" id="btn-qa-chore-today">Add</button>
-          </div>
-          <p class="manage-help tight">Weekly chart — check days this chore is due, then add.</p>
-          <div class="manage-row hub-inline hub-wrap">
-            <input class="manage-input chore-name-input" id="qa-weekly-chore-name" type="text" placeholder="Chore name" autocomplete="off" />
-            <span class="qa-dow-group" aria-label="Days due">
-              <label class="chk chk-dow"><input type="checkbox" id="qa-wd-0" />M</label>
-              <label class="chk chk-dow"><input type="checkbox" id="qa-wd-1" />T</label>
-              <label class="chk chk-dow"><input type="checkbox" id="qa-wd-2" />W</label>
-              <label class="chk chk-dow"><input type="checkbox" id="qa-wd-3" />T</label>
-              <label class="chk chk-dow"><input type="checkbox" id="qa-wd-4" />F</label>
-              <label class="chk chk-dow"><input type="checkbox" id="qa-wd-5" />S</label>
-              <label class="chk chk-dow"><input type="checkbox" id="qa-wd-6" />S</label>
-            </span>
-            <button type="button" class="btn" id="btn-qa-chore-weekly">Add to chart</button>
-          </div>
-        </div>
+            <div class="hub-block">
+              <h3 class="hub-h3">Calendar events (iCalendar / Google Calendar)</h3>
+              <p class="manage-help tight">
+                Google Calendar: use <strong>Settings → “Secret address in iCal format”</strong>. Apple Calendar exports are also iCalendar.
+              </p>
+              <div class="manage-row">
+                <label class="manage-label" for="ics-file">Upload .ics</label>
+                <input class="manage-input" type="file" id="ics-file" accept=".ics,.ical,.ifb,text/calendar" />
+              </div>
+              <div class="manage-row" style="align-items: flex-start">
+                <label class="manage-label" for="ics-paste">Or paste</label>
+                <textarea class="manage-input" id="ics-paste" rows="4" placeholder="BEGIN:VCALENDAR&#10;BEGIN:VEVENT&#10;..."></textarea>
+              </div>
+              <div class="manage-row">
+                <label class="manage-label" for="ics-url">Or iCal URL</label>
+                <input class="manage-input manage-input-wide" id="ics-url" type="url" placeholder="https://calendar.google.com/calendar/ical/..." />
+              </div>
+              <div class="hub-checks">
+                <label class="chk"><input type="checkbox" id="ics-target-master" checked /> Merge into <strong>slide 1</strong> — next 3 days</label>
+                <label class="chk"><input type="checkbox" id="ics-target-weekly" checked /> Merge into <strong>slide 2</strong> — weekly schedule</label>
+              </div>
+              <div class="manage-actions">
+                <button type="button" class="btn btn-primary" id="btn-ics-import">Import</button>
+                <button type="button" class="btn" id="btn-ics-import-url">Import from URL</button>
+              </div>
+            </div>
+          </section>
 
-        <div class="hub-block">
-          <h3 class="hub-h3">Calendar events (iCalendar / Google Calendar)</h3>
-          <p class="manage-help tight">
-            Google Calendar: use <strong>Settings → “Secret address in iCal format”</strong> (calendar must be shareable to you). Apple Calendar exports are also iCalendar.
-          </p>
-          <div class="manage-row">
-            <label class="manage-label" for="ics-file">Upload .ics</label>
-            <input class="manage-input" type="file" id="ics-file" accept=".ics,.ical,.ifb,text/calendar" />
-          </div>
-          <div class="manage-row" style="align-items: flex-start">
-            <label class="manage-label" for="ics-paste">Or paste</label>
-            <textarea class="manage-input" id="ics-paste" rows="4" placeholder="BEGIN:VCALENDAR&#10;BEGIN:VEVENT&#10;..."></textarea>
-          </div>
-          <div class="manage-row">
-            <label class="manage-label" for="ics-url">Or iCal URL</label>
-            <input class="manage-input manage-input-wide" id="ics-url" type="url" placeholder="https://calendar.google.com/calendar/ical/..." />
-          </div>
-          <div class="hub-checks">
-            <label class="chk"><input type="checkbox" id="ics-target-master" checked /> Merge into <strong>slide 1</strong> — next 3 days</label>
-            <label class="chk"><input type="checkbox" id="ics-target-weekly" checked /> Merge into <strong>slide 2</strong> — weekly schedule</label>
-          </div>
-          <div class="manage-actions">
-            <button type="button" class="btn btn-primary" id="btn-ics-import">Import</button>
-            <button type="button" class="btn" id="btn-ics-import-url">Import from URL</button>
-          </div>
-        </div>
-      </section>
+          <section class="manage-section" id="slides-wrap">
+            <h2>Slide content</h2>
+            <p class="manage-help">Schedules: one line per event. Optional time at the start, e.g. <code>9:00 — School</code>. Shopping items: prefix with <code>[x]</code> for checked.</p>
+            <div id="slide-fields"></div>
+          </section>
 
-      <section class="manage-section" id="slides-wrap">
-        <h2>Slide content</h2>
-        <p class="manage-help">Schedules: one line per event. Optional time at the start, e.g. <code>9:00 — School</code>. Shopping items: prefix with <code>[x]</code> for checked.</p>
-        <div id="slide-fields"></div>
-      </section>
-      <div class="manage-footer-actions">
-        <button type="submit" class="btn btn-primary" id="btn-save-dash">Save dashboard</button>
-      </div>
+          <div class="manage-footer-actions">
+            <button type="submit" class="btn btn-primary" id="btn-save-dash">Save dashboard</button>
+          </div>
+        </section>
+
+        <section class="kiosk-panel" id="panel-sync" data-panel="sync">
+          <section class="manage-section">
+            <h2>Cloud sync</h2>
+            <p class="manage-help">One sync key per household. Use the same key on TV + desktop.</p>
+            <div class="manage-row">
+              <label class="manage-label" for="sync-key">Sync key</label>
+              <input class="manage-input manage-input-wide" id="sync-key" type="text" autocomplete="off" spellcheck="false" placeholder="Paste or generate a key" />
+            </div>
+            <div class="manage-actions">
+              <button type="button" class="btn" id="btn-gen-key">Generate new key</button>
+              <button type="button" class="btn" id="btn-save-key">Save key on this device</button>
+              <button type="button" class="btn btn-primary" id="btn-push">Push to cloud</button>
+              <button type="button" class="btn" id="btn-pull">Pull from cloud</button>
+            </div>
+            <p class="manage-status" id="sync-status"></p>
+          </section>
+        </section>
+
+        <section class="kiosk-panel" id="panel-library" data-panel="library">
+          <section class="manage-section">
+            <h2>Library</h2>
+            <p class="manage-help">Coming next: theme switching + saved presets.</p>
+          </section>
+        </section>
+
+        <section class="kiosk-panel" id="panel-settings" data-panel="settings">
+          <section class="manage-section">
+            <h2>Display settings</h2>
+            <div class="manage-row">
+              <label class="manage-label" for="setting-theme">Theme</label>
+              <select class="manage-input manage-input-narrow" id="setting-theme" aria-label="Theme">
+                <option value="pastel-prism">Pastel Prism</option>
+                <option value="neon-kiosk">Neon Kiosk</option>
+                <option value="academia-ledger">Academia Ledger</option>
+              </select>
+              <span class="manage-hint">Applies to TV + Manage</span>
+            </div>
+            <div class="manage-row" style="align-items:flex-start">
+              <label class="manage-label" for="setting-banner">Top banner message</label>
+              <textarea class="manage-input" id="setting-banner" rows="2" placeholder="Leave a message…"></textarea>
+            </div>
+            <div class="manage-row">
+              <label class="manage-label" for="setting-rotation">Slide rotation (seconds)</label>
+              <input class="manage-input manage-input-narrow" id="setting-rotation" type="number" min="3" max="120" step="1" />
+              <span class="manage-hint">3–120</span>
+            </div>
+
+            <div class="subsection">
+              <h4>Weather</h4>
+              <div class="manage-row">
+                <label class="manage-label" for="setting-zip">ZIP / postal code</label>
+                <input class="manage-input manage-input-narrow" id="setting-zip" type="text" inputmode="numeric" placeholder="84010" />
+                <span class="manage-hint">Used for weather + timezone</span>
+              </div>
+              <div class="manage-row">
+                <label class="manage-label" for="setting-timezone">Timezone</label>
+                <input class="manage-input" id="setting-timezone" type="text" placeholder="America/Denver" />
+              </div>
+              <div class="manage-row">
+                <label class="manage-label" for="setting-auto-weather">Auto weather</label>
+                <label class="chk"><input type="checkbox" id="setting-auto-weather" checked /> Enable</label>
+              </div>
+            </div>
+          </section>
+        </section>
+      </main>
     </form>
 
     <script src="/shared/store.js"></script>
+    <script src="/shared/theme-runtime.js"></script>
     <script src="/shared/sync.js"></script>
     <script src="/shared/weather.js"></script>
     <script src="/manage/manage.js"></script>

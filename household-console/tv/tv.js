@@ -273,6 +273,7 @@
 
   function renderSlideContent() {
     var data = DS.load();
+    if (window.DashboardTheme && window.DashboardTheme.applyFromStore) window.DashboardTheme.applyFromStore();
     var t = $("dash-title");
     if (t) t.textContent = data.settings.title || "Dashboard";
     setBanner(data.settings.bannerMessage || "");

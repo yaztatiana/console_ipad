@@ -589,6 +589,8 @@
   function readFormIntoData() {
     var data = DS.load();
     data.settings.title = ($("setting-title") && $("setting-title").value) || data.settings.title;
+    var th = $("setting-theme");
+    if (th) data.settings.themeId = String(th.value || data.settings.themeId || "neon-kiosk");
     data.settings.bannerMessage = ($("setting-banner") && $("setting-banner").value) || data.settings.bannerMessage || "";
     data.settings.zip = ($("setting-zip") && $("setting-zip").value) || data.settings.zip || "84010";
     data.settings.timeZone = ($("setting-timezone") && $("setting-timezone").value) || data.settings.timeZone || "America/Denver";
@@ -669,6 +671,7 @@
   function fillForm(data) {
     data = DS.ensureFourSlides(data);
     if ($("setting-title")) $("setting-title").value = data.settings.title || "";
+    if ($("setting-theme")) $("setting-theme").value = data.settings.themeId || "neon-kiosk";
     if ($("setting-banner")) $("setting-banner").value = data.settings.bannerMessage || "";
     if ($("setting-zip")) $("setting-zip").value = data.settings.zip || "84010";
     if ($("setting-timezone")) $("setting-timezone").value = data.settings.timeZone || "America/Denver";
@@ -684,6 +687,7 @@
   function saveLocal(data) {
     DS.save(data);
     fillForm(DS.load());
+    if (window.DashboardTheme && window.DashboardTheme.applyFromStore) window.DashboardTheme.applyFromStore();
   }
 
   function onSaveDash(e) {
@@ -728,45 +732,6 @@
     }
     SYNC.setLocalSyncKey(v);
     showBanner("ok", "Sync key saved in this browser.");
-    refreshSyncLine();
-  }
-
-  function tryClipboardPasteIntoSyncKey() {
-    var inp = $("sync-key");
-    if (!inp) return;
-    if (navigator.clipboard && navigator.clipboard.readText) {
-      navigator.clipboard
-        .readText()
-        .then(function (t) {
-          var v = String(t || "").trim();
-          if (!v) {
-            showBanner("err", "Clipboard is empty.");
-            return;
-          }
-          inp.value = v;
-          showBanner("ok", "Pasted from clipboard. Click Save key.");
-        })
-        .catch(function () {
-          showBanner("err", "Clipboard paste blocked. Try typing, or use /manage/?key=YOUR_KEY on this device.");
-        });
-    } else {
-      showBanner("err", "Clipboard API not available. Use /manage/?key=YOUR_KEY on this device.");
-    }
-  }
-
-  function enterKeyViaPrompt() {
-    var current = SYNC.getLocalSyncKey() || "";
-    var v = window.prompt("Enter sync key for this device", current) || "";
-    v = String(v).trim();
-    if (!v) return;
-    var inp = $("sync-key");
-    if (inp) inp.value = v;
-    if (v.length < 8) {
-      showBanner("err", "Sync key should be at least 8 characters.");
-      return;
-    }
-    SYNC.setLocalSyncKey(v);
-    showBanner("ok", "Sync key saved on this device.");
     refreshSyncLine();
   }
 
@@ -876,11 +841,51 @@
     }
   }
 
+  function setActivePanel(id) {
+    var tabs = document.querySelectorAll(".kiosk-tab[data-tab]");
+    var panels = document.querySelectorAll(".kiosk-panel[data-panel]");
+    var i;
+    for (i = 0; i < panels.length; i++) {
+      var p = panels[i];
+      var on = p.getAttribute("data-panel") === id;
+      p.classList.toggle("is-active", on);
+    }
+    for (i = 0; i < tabs.length; i++) {
+      var t = tabs[i];
+      var on2 = t.getAttribute("data-tab") === id;
+      t.classList.toggle("is-active", on2);
+      t.setAttribute("aria-selected", on2 ? "true" : "false");
+    }
+  }
+
+  function initTabs() {
+    var tabs = document.querySelectorAll(".kiosk-tab[data-tab]");
+    if (!tabs || !tabs.length) return;
+    var i;
+    for (i = 0; i < tabs.length; i++) {
+      tabs[i].addEventListener("click", function (e) {
+        var id = (e.currentTarget && e.currentTarget.getAttribute("data-tab")) || "";
+        if (!id) return;
+        setActivePanel(id);
+      });
+    }
+    setActivePanel("title");
+  }
+
   function init() {
+    initTabs();
     buildSlideFields();
     fillForm(DS.load());
     refreshSyncLine();
     applyKeyFromUrlIfPresent();
+    var st = $("setting-theme");
+    if (st) {
+      st.addEventListener("change", function () {
+        var d = readFormIntoData();
+        saveLocal(d);
+        if (window.DashboardTheme && window.DashboardTheme.applyFromStore) window.DashboardTheme.applyFromStore();
+      });
+    }
     if (window.DashboardWeather && window.DashboardWeather.syncOnce) {
       window.DashboardWeather.syncOnce().then(function (ok) {
         if (ok) fillForm(DS.load());
@@ -890,14 +895,10 @@
     var form = $("dash-form");
     if (form) form.addEventListener("submit", onSaveDash);
     var bg = $("btn-gen-key");
-    var benter = $("btn-enter-key");
-    var bpaste = $("btn-paste-key");
     var bk = $("btn-save-key");
     var bp = $("btn-push");
     var bl = $("btn-pull");
     if (bg) bg.addEventListener("click", onGenKey);
-    if (benter) benter.addEventListener("click", enterKeyViaPrompt);
-    if (bpaste) bpaste.addEventListener("click", tryClipboardPasteIntoSyncKey);
     if (bk) bk.addEventListener("click", onSaveKey);
     if (bp) bp.addEventListener("click", onPush);
     if (bl) bl.addEventListener("click", onPull);

@@ -13,7 +13,100 @@
   /* Scale slightly with viewport, but stay desktop-usable */
   font-size: clamp(16px, 1.2vw, 18px);
   line-height: 1.5;
-  padding: 1.25rem clamp(1rem, 3vw, 2rem) 3rem;
+  padding: 0;
+}
+
+.kiosk-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.9rem;
+  padding: 1rem clamp(0.9rem, 3vw, 2rem);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.kiosk-titlebox {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex: 1 1 auto;
+  min-width: 14rem;
+  max-width: 44rem;
+}
+
+.kiosk-label {
+  font-size: 0.9rem;
+  letter-spacing: 0.02em;
+  color: rgba(238, 242, 255, 0.78);
+}
+
+.kiosk-titleinput {
+  max-width: none;
+  width: 100%;
+  min-width: 12rem;
+  font-weight: 650;
+}
+
+.kiosk-tabs {
+  display: flex;
+  gap: 0.55rem;
+  flex: 0 0 auto;
+}
+
+.kiosk-tab {
+  cursor: pointer;
+  padding: 0.6rem 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+  color: inherit;
+  font: inherit;
+  font-weight: 650;
+  min-width: 6.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.kiosk-tab:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.kiosk-tab.is-active {
+  border-color: rgba(0, 245, 255, 0.32);
+  box-shadow: 0 0 0 1px rgba(255, 43, 214, 0.16) inset;
+}
+
+.kiosk-tab:focus-visible {
+  outline: 3px solid #60a5fa;
+  outline-offset: 2px;
+}
+
+.kiosk-form {
+  margin: 0;
+}
+
+.kiosk-stage {
+  padding: 1.1rem clamp(0.9rem, 3vw, 2rem) 3rem;
+}
+
+.kiosk-panel {
+  display: none;
+  max-width: 60rem;
+  padding: 1.1rem 1.1rem 1.4rem;
+  border-radius: 26px;
+  border: 2px solid rgba(255, 255, 255, 0.14);
+  background: rgba(10, 6, 18, 0.45);
+  box-shadow:
+    0 26px 70px rgba(0, 0, 0, 0.40),
+    0 0 0 1px rgba(0, 245, 255, 0.12) inset;
+}
+
+.kiosk-panel.is-active {
+  display: block;
+}
+
+.kiosk-links {
+  margin-bottom: 0.75rem;
 }
 
 .manage-header {

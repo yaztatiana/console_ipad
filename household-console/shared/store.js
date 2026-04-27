@@ -379,6 +379,7 @@
       version: 1,
       settings: {
         title: "Home dashboard",
+        themeId: "neon-kiosk",
         bannerMessage: "",
         zip: "84010",
         timeZone: "America/Denver",
@@ -403,6 +404,9 @@
     });
     if (!data.settings || typeof data.settings !== "object") data.settings = defaultData().settings;
     data.settings.title = String(data.settings.title || "Home dashboard");
+    var tid = String(data.settings.themeId || "neon-kiosk");
+    if (tid !== "pastel-prism" && tid !== "neon-kiosk" && tid !== "academia-ledger") tid = "neon-kiosk";
+    data.settings.themeId = tid;
     data.settings.bannerMessage = String(data.settings.bannerMessage || "");
     data.settings.zip = String(data.settings.zip || "84010");
     data.settings.timeZone = String(data.settings.timeZone || "America/Denver");

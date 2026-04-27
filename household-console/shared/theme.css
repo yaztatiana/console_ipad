@@ -213,7 +213,18 @@
 
 /* ————————— Neon Kiosk (stub) ————————— */
 .theme.theme-neon-kiosk {
-  /* TODO */
+  --bg0: #07060b;
+  --bg1: #120b22;
+  --text: rgba(244, 245, 255, 0.95);
+  --muted: rgba(244, 245, 255, 0.70);
+  --line: rgba(255, 255, 255, 0.14);
+  --panel: rgba(10, 6, 18, 0.72);
+  --panel2: rgba(10, 6, 18, 0.56);
+  --shadow: rgba(0, 0, 0, 0.45);
+  --accent: #00f5ff;
+  --accent2: #ff2bd6;
+  --gold: rgba(255, 205, 85, 0.95);
+  --ink: rgba(244, 245, 255, 0.95);
 }
 
 /* ————————— Academia Ledger (stub) ————————— */
@@ -221,14 +232,96 @@
   /* TODO */
 }
 
-/*
-  Theme library entry: imports fonts + all palettes.
-  Active theme = html[data-theme="…"] set by shared/themes.js (localStorage: household-ui-theme).
+.theme.theme-neon-kiosk.tv-body,
+.theme.theme-neon-kiosk.manage-body {
+  color: var(--text);
+  background:
+    radial-gradient(1100px 700px at 12% 18%, rgba(0, 245, 255, 0.14), rgba(0, 245, 255, 0) 62%),
+    radial-gradient(900px 650px at 82% 78%, rgba(255, 43, 214, 0.13), rgba(255, 43, 214, 0) 55%),
+    radial-gradient(900px 520px at 74% 20%, rgba(255, 205, 85, 0.10), rgba(255, 205, 85, 0) 55%),
+    linear-gradient(135deg, var(--bg0), var(--bg1));
+}
 
-  Add a theme: new file in ./themes/ + register id in themes.js + store.js THEME_IDS
-*/
-@import url("./themes/fonts.css");
-@import url("./themes/sailor-sky.css");
-@import url("./themes/academia-night.css");
-@import url("./themes/vegas-street.css");
-@import url("./themes/sailor-moon-prism.css");
+.theme.theme-neon-kiosk.tv-body::before,
+.theme.theme-neon-kiosk.manage-body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.08) 0 1px, rgba(255, 255, 255, 0) 1px 10px),
+    radial-gradient(circle at 75% 55%, rgba(255, 255, 255, 0.06) 0 1px, rgba(255, 255, 255, 0) 1px 12px),
+    repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.03) 1px, rgba(255, 255, 255, 0) 1px, rgba(255, 255, 255, 0) 7px);
+  opacity: 0.7;
+  mix-blend-mode: screen;
+}
+
+.theme.theme-neon-kiosk .tv-header,
+.theme.theme-neon-kiosk .tv-footer,
+.theme.theme-neon-kiosk .manage-header {
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+.theme.theme-neon-kiosk .tv-title,
+.theme.theme-neon-kiosk .manage-h1 {
+  text-shadow: 0 0 14px rgba(0, 245, 255, 0.22), 0 0 22px rgba(255, 43, 214, 0.18);
+}
+
+.theme.theme-neon-kiosk .btn,
+.theme.theme-neon-kiosk .manage-link,
+.theme.theme-neon-kiosk .tv-manage {
+  color: var(--text);
+  background: rgba(10, 6, 18, 0.62);
+  border-color: rgba(0, 245, 255, 0.32);
+  box-shadow: 0 0 0 1px rgba(255, 43, 214, 0.14) inset;
+}
+
+.theme.theme-neon-kiosk .btn-primary {
+  border-color: rgba(255, 43, 214, 0.45);
+  background: linear-gradient(90deg, rgba(255, 43, 214, 0.28), rgba(0, 245, 255, 0.18));
+}
+
+.theme.theme-neon-kiosk .btn:focus-visible,
+.theme.theme-neon-kiosk .manage-link:focus-visible,
+.theme.theme-neon-kiosk .tv-manage:focus-visible,
+.theme.theme-neon-kiosk .slide:focus-visible,
+.theme.theme-neon-kiosk .shopping-item:focus-visible,
+.theme.theme-neon-kiosk .chore-item:focus-visible,
+.theme.theme-neon-kiosk .chore-mark:focus-visible {
+  outline-color: rgba(0, 245, 255, 0.75);
+}
+
+.theme.theme-neon-kiosk .manage-input,
+.theme.theme-neon-kiosk .tv-datetime {
+  color: var(--text);
+  background: rgba(10, 6, 18, 0.58);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.theme.theme-neon-kiosk .hub-block,
+.theme.theme-neon-kiosk .slide-card,
+.theme.theme-neon-kiosk .weekly-col,
+.theme.theme-neon-kiosk .shopping-list,
+.theme.theme-neon-kiosk .master-weather,
+.theme.theme-neon-kiosk .master-forecast,
+.theme.theme-neon-kiosk .master-chores {
+  background: rgba(10, 6, 18, 0.62);
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow:
+    0 18px 50px rgba(0, 0, 0, 0.38),
+    0 0 0 1px rgba(0, 245, 255, 0.12) inset;
+}
+
+.theme.theme-neon-kiosk .block-title,
+.theme.theme-neon-kiosk .manage-help,
+.theme.theme-neon-kiosk .manage-status,
+.theme.theme-neon-kiosk .manage-hint,
+.theme.theme-neon-kiosk .tv-hint,
+.theme.theme-neon-kiosk .muted {
+  color: rgba(244, 245, 255, 0.72);
+}
+
+.theme.theme-neon-kiosk .tv-banner {
+  background: linear-gradient(90deg, rgba(255, 43, 214, 0.28), rgba(0, 245, 255, 0.20));
+  border-color: rgba(255, 255, 255, 0.14);
+}
