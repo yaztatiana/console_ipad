@@ -83,8 +83,23 @@
   }
 
   function generateSyncKey() {
-    if (global.crypto && global.crypto.randomUUID) return global.crypto.randomUUID();
-    return "key-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 12);
+    // Short, URL-safe key for typing on TV remotes (12 chars).
+    // Existing longer keys still work.
+    var alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no 0/O/1/I
+    var out = "";
+    var i;
+    if (global.crypto && global.crypto.getRandomValues) {
+      var bytes = new Uint8Array(12);
+      global.crypto.getRandomValues(bytes);
+      for (i = 0; i < bytes.length; i++) {
+        out += alphabet[bytes[i] % alphabet.length];
+      }
+      return out;
+    }
+    for (i = 0; i < 12; i++) {
+      out += alphabet[Math.floor(Math.random() * alphabet.length)];
+    }
+    return out;
   }
 
   function ready() {
