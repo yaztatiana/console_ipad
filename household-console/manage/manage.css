@@ -10,7 +10,8 @@
   background: #0b0d12;
   color: #eef2ff;
   font-family: system-ui, -apple-system, Segoe UI, sans-serif;
-  font-size: 110%;
+  /* Scale slightly with viewport, but stay desktop-usable */
+  font-size: clamp(16px, 1.2vw, 18px);
   line-height: 1.5;
   padding: 1.25rem clamp(1rem, 3vw, 2rem) 3rem;
 }

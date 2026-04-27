@@ -11,7 +11,8 @@ body.tv-body {
   background: #0b0d12;
   color: #eef2ff;
   font-family: system-ui, -apple-system, Segoe UI, sans-serif;
-  font-size: 110%;
+  /* Responsive base type for 10-foot viewing */
+  font-size: clamp(18px, 2.0vw, 30px);
 }
 
 .tv-body {
