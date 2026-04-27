@@ -66,7 +66,7 @@
       .map(function (line) {
         var checked = /^\[x\]\s*|^\[X\]\s*|^✓\s*/i.test(line);
         var t = line.replace(/^\[x\]\s*|^\[X\]\s*|^✓\s*/i, "").trim();
-        return { id: uid(), text: t, checked: checked };
+        return { text: t, checked: checked };
       });
   }
 
@@ -198,10 +198,12 @@
     var d0 = addDays(today, 0);
     var d1 = addDays(today, 1);
     var d2 = addDays(today, 2);
+    var now = new Date();
     var k;
     for (k = 0; k < events.length; k++) {
       var ev = events[k];
       if (!ev.start) continue;
+      if (ev.start.getTime() < now.getTime()) continue; // discard past events
       var sd = startOfDay(ev.start);
       var item;
       if (ev.allDay) {
@@ -567,10 +569,16 @@
       var nm = $("s-list-" + li + "-name");
       var ta = $("s-list-" + li + "-lines");
       var name = nm ? nm.value.trim() : "";
-      var items = parseShoppingLines(ta ? ta.value : "");
-      if (!name && !items.length) continue;
+      var parsed = parseShoppingLines(ta ? ta.value : "");
+      if (!name && !parsed.length) continue;
       var match = prev[lists.length];
       var lid = match && match.id ? match.id : uid();
+      var prevItems = match && Array.isArray(match.items) ? match.items : [];
+      var items = parsed.map(function (it, idx) {
+        var p = prevItems[idx];
+        var iid = p && p.text === it.text && p.id ? p.id : uid();
+        return { id: iid, text: it.text, checked: !!it.checked };
+      });
       lists.push({ id: lid, name: name || "List " + (li + 1), items: items });
     }
     s.lists = lists;

@@ -8,6 +8,7 @@
   var rotateTimer = null;
   var POLL_MS = 30000;
   var pushTimer = null;
+  var clockTimer = null;
 
   function $(id) {
     return document.getElementById(id);
@@ -34,6 +35,19 @@
     var b = el("span", "tv-banner-text", text);
     track.appendChild(a);
     track.appendChild(b);
+  }
+
+  function formatNow() {
+    var d = new Date();
+    var date = d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+    var time = d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+    return date + " · " + time;
+  }
+
+  function updateClock() {
+    var elDt = $("tv-datetime");
+    if (!elDt) return;
+    elDt.textContent = formatNow();
   }
 
   function maybePushToCloud() {
@@ -216,6 +230,10 @@
       for (j = 0; j < L.items.length; j++) {
         var it = L.items[j];
         var li = el("li", "shopping-item" + (it.checked ? " is-checked" : ""), (it.checked ? "[x] " : "[ ] ") + (it.text || ""));
+        li.setAttribute("role", "button");
+        li.setAttribute("tabindex", "0");
+        li.setAttribute("data-shop-list-idx", String(i));
+        li.setAttribute("data-shop-item-id", String(it.id || ""));
         ul.appendChild(li);
       }
       if (!L.items.length) ul.appendChild(el("li", "muted", "—"));
@@ -266,11 +284,37 @@
     }
   }
 
+  function toggleShoppingItem(listIdx, itemId) {
+    if (listIdx == null || itemId == null) return;
+    var li = parseInt(String(listIdx), 10);
+    if (li !== li || li < 0 || li > 99) return;
+    var id = String(itemId || "");
+    if (!id) return;
+    var data = DS.load();
+    var s = data.slides[3];
+    if (!s || s.kind !== "shopping" || !Array.isArray(s.lists) || !s.lists[li]) return;
+    var items = s.lists[li].items || [];
+    var i;
+    for (i = 0; i < items.length; i++) {
+      if (items[i].id === id) {
+        items[i].checked = !items[i].checked;
+        DS.save(data);
+        renderSlideContent();
+        maybePushToCloud();
+        return;
+      }
+    }
+  }
+
   function onClick(e) {
     var t = e.target;
     while (t && t !== document.body) {
       if (t && t.getAttribute && t.getAttribute("data-chore-id")) {
         toggleChoreById(t.getAttribute("data-chore-id"));
+        return;
+      }
+      if (t && t.getAttribute && t.getAttribute("data-shop-item-id")) {
+        toggleShoppingItem(t.getAttribute("data-shop-list-idx"), t.getAttribute("data-shop-item-id"));
         return;
       }
       t = t.parentNode;
@@ -285,6 +329,11 @@
       if (t && t.getAttribute && t.getAttribute("data-chore-id")) {
         e.preventDefault();
         toggleChoreById(t.getAttribute("data-chore-id"));
+        return;
+      }
+      if (t && t.getAttribute && t.getAttribute("data-shop-item-id")) {
+        e.preventDefault();
+        toggleShoppingItem(t.getAttribute("data-shop-list-idx"), t.getAttribute("data-shop-item-id"));
         return;
       }
       t = t.parentNode;
@@ -357,6 +406,9 @@
     document.addEventListener("keydown", onKeyDown);
     document.addEventListener("click", onClick);
     document.addEventListener("keydown", onItemKeyDown);
+    updateClock();
+    if (clockTimer) clearInterval(clockTimer);
+    clockTimer = window.setInterval(updateClock, 30000);
     armRotate();
   }
 

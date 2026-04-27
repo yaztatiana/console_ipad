@@ -16,6 +16,17 @@
     return x.getFullYear() + "-W" + (weekNo < 10 ? "0" : "") + weekNo;
   }
 
+  // Sunday 00:00-based week id: YYYY-MM-DD of the Sunday that starts the week
+  function sundayWeekId(d) {
+    var x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    var day = x.getDay(); // 0 Sunday .. 6 Saturday
+    x.setDate(x.getDate() - day);
+    var y = x.getFullYear();
+    var m = x.getMonth() + 1;
+    var dd = x.getDate();
+    return y + "-" + (m < 10 ? "0" : "") + m + "-" + (dd < 10 ? "0" : "") + dd;
+  }
+
   function uid() {
     if (global.crypto && global.crypto.randomUUID) return global.crypto.randomUUID();
     return "id-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 10);
@@ -323,6 +334,7 @@
         title: "Home dashboard",
         bannerMessage: "",
         lastWeekId: "",
+        lastSundayWeekId: "",
         rotationSec: 15,
       },
       slides: [defaultMaster(), defaultWeekly(), defaultChores(), defaultShopping()],
@@ -344,6 +356,8 @@
     data.settings.bannerMessage = String(data.settings.bannerMessage || "");
     var curWeek = weekId(new Date());
     data.settings.lastWeekId = String(data.settings.lastWeekId || curWeek);
+    var curSunWeek = sundayWeekId(new Date());
+    data.settings.lastSundayWeekId = String(data.settings.lastSundayWeekId || curSunWeek);
     var sec = Number(data.settings.rotationSec);
     if (sec !== sec || sec < 3) {
       var legacyMs = Number(data.settings.rotationMs);
@@ -372,6 +386,23 @@
           });
       }
       data.settings.lastWeekId = curWeek;
+    }
+
+    // Sunday-week rollover for Shopping: clear checked items in Groceries + Home lists.
+    if (data.settings.lastSundayWeekId !== curSunWeek) {
+      var sh = data.slides[3];
+      if (sh && sh.kind === "shopping" && Array.isArray(sh.lists)) {
+        sh.lists = sh.lists.map(function (L) {
+          var name = String((L && L.name) || "").trim().toLowerCase();
+          if (name !== "groceries" && name !== "home") return L;
+          var items = Array.isArray(L.items) ? L.items : [];
+          L.items = items.filter(function (it) {
+            return it && !it.checked;
+          });
+          return L;
+        });
+      }
+      data.settings.lastSundayWeekId = curSunWeek;
     }
     return data;
   }
