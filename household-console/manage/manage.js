@@ -747,6 +747,39 @@
       });
   }
 
+  function focusables() {
+    var nodes = document.querySelectorAll(
+      'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
+    );
+    return Array.prototype.slice.call(nodes).filter(function (n) {
+      return !!(n && n.offsetParent !== null);
+    });
+  }
+
+  function moveFocus(delta) {
+    var list = focusables();
+    if (!list.length) return;
+    var cur = document.activeElement;
+    var idx = list.indexOf(cur);
+    if (idx < 0) idx = 0;
+    var next = list[Math.max(0, Math.min(list.length - 1, idx + delta))];
+    if (next && next.focus) next.focus();
+  }
+
+  // FireTV remote: arrow keys should navigate, not change number inputs.
+  function onRemoteArrowNav(e) {
+    var a = document.activeElement;
+    if (!a) return;
+    if (a.id !== "setting-rotation") return;
+    if (e.key === "ArrowDown" || e.key === "ArrowRight") {
+      e.preventDefault();
+      moveFocus(1);
+    } else if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
+      e.preventDefault();
+      moveFocus(-1);
+    }
+  }
+
   function init() {
     buildSlideFields();
     fillForm(DS.load());
@@ -756,6 +789,7 @@
         if (ok) fillForm(DS.load());
       });
     }
+    document.addEventListener("keydown", onRemoteArrowNav, true);
     var form = $("dash-form");
     if (form) form.addEventListener("submit", onSaveDash);
     var bg = $("btn-gen-key");
