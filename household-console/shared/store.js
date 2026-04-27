@@ -333,6 +333,9 @@
       settings: {
         title: "Home dashboard",
         bannerMessage: "",
+        zip: "84010",
+        timeZone: "America/Denver",
+        autoWeather: true,
         lastWeekId: "",
         lastSundayWeekId: "",
         rotationSec: 15,
@@ -354,6 +357,9 @@
     if (!data.settings || typeof data.settings !== "object") data.settings = defaultData().settings;
     data.settings.title = String(data.settings.title || "Home dashboard");
     data.settings.bannerMessage = String(data.settings.bannerMessage || "");
+    data.settings.zip = String(data.settings.zip || "84010");
+    data.settings.timeZone = String(data.settings.timeZone || "America/Denver");
+    data.settings.autoWeather = data.settings.autoWeather !== false;
     var curWeek = weekId(new Date());
     data.settings.lastWeekId = String(data.settings.lastWeekId || curWeek);
     var curSunWeek = sundayWeekId(new Date());

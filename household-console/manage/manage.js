@@ -588,6 +588,10 @@
     var data = DS.load();
     data.settings.title = ($("setting-title") && $("setting-title").value) || data.settings.title;
     data.settings.bannerMessage = ($("setting-banner") && $("setting-banner").value) || data.settings.bannerMessage || "";
+    data.settings.zip = ($("setting-zip") && $("setting-zip").value) || data.settings.zip || "84010";
+    data.settings.timeZone = ($("setting-timezone") && $("setting-timezone").value) || data.settings.timeZone || "America/Denver";
+    var aw = $("setting-auto-weather");
+    if (aw) data.settings.autoWeather = !!aw.checked;
     var rot = Number(($("setting-rotation") && $("setting-rotation").value) || data.settings.rotationSec);
     data.settings.rotationSec = rot;
     readMaster(data);
@@ -669,6 +673,9 @@
     data = DS.ensureFourSlides(data);
     if ($("setting-title")) $("setting-title").value = data.settings.title || "";
     if ($("setting-banner")) $("setting-banner").value = data.settings.bannerMessage || "";
+    if ($("setting-zip")) $("setting-zip").value = data.settings.zip || "84010";
+    if ($("setting-timezone")) $("setting-timezone").value = data.settings.timeZone || "America/Denver";
+    if ($("setting-auto-weather")) $("setting-auto-weather").checked = data.settings.autoWeather !== false;
     if ($("setting-rotation")) $("setting-rotation").value = String(data.settings.rotationSec != null ? data.settings.rotationSec : 15);
     if ($("sync-key")) $("sync-key").value = SYNC.getLocalSyncKey() || "";
     fillMaster(data.slides[0]);
@@ -768,6 +775,11 @@
     buildSlideFields();
     fillForm(DS.load());
     refreshSyncLine();
+    if (window.DashboardWeather && window.DashboardWeather.syncOnce) {
+      window.DashboardWeather.syncOnce().then(function (ok) {
+        if (ok) fillForm(DS.load());
+      });
+    }
     var form = $("dash-form");
     if (form) form.addEventListener("submit", onSaveDash);
     var bg = $("btn-gen-key");

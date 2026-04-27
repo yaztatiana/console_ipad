@@ -3,12 +3,14 @@
 
   var DS = window.DashboardStore;
   var SYNC = window.DashboardSync;
+  var WX = window.DashboardWeather;
   var idx = 0;
   var pollTimer = null;
   var rotateTimer = null;
   var POLL_MS = 30000;
   var pushTimer = null;
   var clockTimer = null;
+  var weatherTimer = null;
 
   function $(id) {
     return document.getElementById(id);
@@ -38,9 +40,11 @@
   }
 
   function formatNow() {
+    var data = DS.load();
+    var tz = (data.settings && data.settings.timeZone) || "";
     var d = new Date();
-    var date = d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
-    var time = d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+    var date = d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", timeZone: tz || undefined });
+    var time = d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", timeZone: tz || undefined });
     return date + " · " + time;
   }
 
@@ -409,6 +413,17 @@
     updateClock();
     if (clockTimer) clearInterval(clockTimer);
     clockTimer = window.setInterval(updateClock, 30000);
+    if (WX && WX.syncOnce) {
+      WX.syncOnce().then(function () {
+        renderSlideContent();
+      });
+      if (weatherTimer) clearInterval(weatherTimer);
+      weatherTimer = window.setInterval(function () {
+        WX.syncOnce().then(function (ok) {
+          if (ok) renderSlideContent();
+        });
+      }, 30 * 60 * 1000);
+    }
     armRotate();
   }
 

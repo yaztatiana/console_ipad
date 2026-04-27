@@ -45,6 +45,19 @@
         <label class="manage-label" for="setting-title">Title (TV header)</label>
         <input class="manage-input" id="setting-title" type="text" />
       </div>
+      <div class="manage-row">
+        <label class="manage-label" for="setting-zip">ZIP / postal code</label>
+        <input class="manage-input manage-input-narrow" id="setting-zip" type="text" inputmode="numeric" placeholder="84010" />
+        <span class="manage-hint">Used for weather + timezone</span>
+      </div>
+      <div class="manage-row">
+        <label class="manage-label" for="setting-timezone">Timezone</label>
+        <input class="manage-input" id="setting-timezone" type="text" placeholder="America/Denver" />
+      </div>
+      <div class="manage-row">
+        <label class="manage-label" for="setting-auto-weather">Auto weather</label>
+        <label class="chk"><input type="checkbox" id="setting-auto-weather" checked /> Enable</label>
+      </div>
       <div class="manage-row" style="align-items:flex-start">
         <label class="manage-label" for="setting-banner">Top banner message</label>
         <textarea class="manage-input" id="setting-banner" rows="2" placeholder="Leave a message…"></textarea>
@@ -130,6 +143,7 @@
 
     <script src="/shared/store.js"></script>
     <script src="/shared/sync.js"></script>
+    <script src="/shared/weather.js"></script>
     <script src="/manage/manage.js"></script>
   </body>
 </html>
