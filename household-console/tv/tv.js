@@ -337,6 +337,62 @@
     }
   }
 
+  function closestWithAttr(node, attr) {
+    var t = node;
+    while (t && t !== document.body) {
+      if (t.getAttribute && t.getAttribute(attr)) return t;
+      t = t.parentNode;
+    }
+    return null;
+  }
+
+  function focusChartCell(rowId, dow) {
+    var rid = String(rowId || "");
+    var j = parseInt(String(dow), 10);
+    if (!rid) return false;
+    if (j !== j || j < 0 || j > 6) return false;
+    var sel = '[data-chart-row-id="' + rid.replace(/"/g, '\\"') + '"][data-chart-dow="' + String(j) + '"]';
+    var elCell = document.querySelector(sel);
+    if (elCell && elCell.focus) {
+      elCell.focus({ preventScroll: false });
+      return true;
+    }
+    return false;
+  }
+
+  function getChartRowOrder() {
+    var nodes = document.querySelectorAll("[data-chart-row-id][data-chart-dow]");
+    var seen = {};
+    var order = [];
+    var i;
+    for (i = 0; i < nodes.length; i++) {
+      var rid = nodes[i].getAttribute("data-chart-row-id");
+      if (!rid || seen[rid]) continue;
+      seen[rid] = true;
+      order.push(rid);
+    }
+    return order;
+  }
+
+  function moveChartFocus(curRowId, curDow, dRow, dCol) {
+    var order = getChartRowOrder();
+    if (!order.length) return;
+    var rIdx = order.indexOf(String(curRowId || ""));
+    if (rIdx < 0) rIdx = 0;
+    var dow = parseInt(String(curDow), 10);
+    if (dow !== dow) dow = 0;
+    var nextR = rIdx + dRow;
+    var nextD = dow + dCol;
+    if (nextD < 0) {
+      nextD = 0;
+    } else if (nextD > 6) {
+      nextD = 6;
+    }
+    if (nextR < 0) nextR = 0;
+    if (nextR > order.length - 1) nextR = order.length - 1;
+    focusChartCell(order[nextR], nextD);
+  }
+
   function onClick(e) {
     var t = e.target;
     while (t && t !== document.body) {
@@ -420,6 +476,32 @@
 
   function onKeyDown(e) {
     var k = e.key;
+    var chartCell = closestWithAttr(document.activeElement, "data-chart-row-id");
+    if (chartCell) {
+      var rid = chartCell.getAttribute("data-chart-row-id");
+      var dow = chartCell.getAttribute("data-chart-dow");
+      if (k === "ArrowRight") {
+        e.preventDefault();
+        moveChartFocus(rid, dow, 0, 1);
+        armRotate();
+        return;
+      } else if (k === "ArrowLeft") {
+        e.preventDefault();
+        moveChartFocus(rid, dow, 0, -1);
+        armRotate();
+        return;
+      } else if (k === "ArrowDown") {
+        e.preventDefault();
+        moveChartFocus(rid, dow, 1, 0);
+        armRotate();
+        return;
+      } else if (k === "ArrowUp") {
+        e.preventDefault();
+        moveChartFocus(rid, dow, -1, 0);
+        armRotate();
+        return;
+      }
+    }
     if (k === "ArrowRight" || k === "PageDown") {
       e.preventDefault();
       setSlide(idx + 1);
