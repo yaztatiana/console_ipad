@@ -10,6 +10,7 @@
   background: #0b0d12;
   color: #eef2ff;
   font-family: system-ui, -apple-system, Segoe UI, sans-serif;
+  font-size: 110%;
   line-height: 1.5;
   padding: 1.25rem clamp(1rem, 3vw, 2rem) 3rem;
 }

@@ -204,8 +204,14 @@
       row.appendChild(el("div", "chore-cell chore-name", r.name || "—"));
       var j;
       for (j = 0; j < 7; j++) {
-        var on = r.days && r.days[j];
-        row.appendChild(el("div", "chore-cell chore-mark" + (on ? " is-on" : ""), on ? "✓" : ""));
+        var done = r.checks && r.checks[j];
+        var due = r.days && r.days[j];
+        var cell = el("div", "chore-cell chore-mark" + (done ? " is-on" : "") + (due ? " is-due" : ""), done ? "✓" : "");
+        cell.setAttribute("role", "button");
+        cell.setAttribute("tabindex", "0");
+        cell.setAttribute("data-chart-row-id", String(r.id || ""));
+        cell.setAttribute("data-chart-dow", String(j));
+        row.appendChild(cell);
       }
       table.appendChild(row);
     }
@@ -310,6 +316,27 @@
     }
   }
 
+  function toggleChoreChartCell(rowId, dow) {
+    var rid = String(rowId || "");
+    var j = parseInt(String(dow), 10);
+    if (!rid) return;
+    if (j !== j || j < 0 || j > 6) return;
+    var data = DS.load();
+    var c = data.slides[2];
+    if (!c || c.kind !== "chores" || !Array.isArray(c.rows)) return;
+    var i;
+    for (i = 0; i < c.rows.length; i++) {
+      if (c.rows[i] && c.rows[i].id === rid) {
+        if (!Array.isArray(c.rows[i].checks)) c.rows[i].checks = [false, false, false, false, false, false, false];
+        c.rows[i].checks[j] = !c.rows[i].checks[j];
+        DS.save(data);
+        renderSlideContent();
+        maybePushToCloud();
+        return;
+      }
+    }
+  }
+
   function onClick(e) {
     var t = e.target;
     while (t && t !== document.body) {
@@ -319,6 +346,10 @@
       }
       if (t && t.getAttribute && t.getAttribute("data-shop-item-id")) {
         toggleShoppingItem(t.getAttribute("data-shop-list-idx"), t.getAttribute("data-shop-item-id"));
+        return;
+      }
+      if (t && t.getAttribute && t.getAttribute("data-chart-row-id")) {
+        toggleChoreChartCell(t.getAttribute("data-chart-row-id"), t.getAttribute("data-chart-dow"));
         return;
       }
       t = t.parentNode;
@@ -338,6 +369,11 @@
       if (t && t.getAttribute && t.getAttribute("data-shop-item-id")) {
         e.preventDefault();
         toggleShoppingItem(t.getAttribute("data-shop-list-idx"), t.getAttribute("data-shop-item-id"));
+        return;
+      }
+      if (t && t.getAttribute && t.getAttribute("data-chart-row-id")) {
+        e.preventDefault();
+        toggleChoreChartCell(t.getAttribute("data-chart-row-id"), t.getAttribute("data-chart-dow"));
         return;
       }
       t = t.parentNode;

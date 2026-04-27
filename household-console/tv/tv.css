@@ -11,6 +11,7 @@ body.tv-body {
   background: #0b0d12;
   color: #eef2ff;
   font-family: system-ui, -apple-system, Segoe UI, sans-serif;
+  font-size: 110%;
 }
 
 .tv-body {
@@ -370,6 +371,20 @@ body.tv-body {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.chore-mark {
+  cursor: pointer;
+}
+
+.chore-mark:focus-visible {
+  outline: 3px solid rgba(96, 165, 250, 0.75);
+  outline-offset: -1px;
+}
+
+.chore-mark.is-due:not(.is-on) {
+  background: rgba(96, 165, 250, 0.18);
+  color: rgba(238, 242, 255, 0.8);
 }
 
 .chore-name,

@@ -280,12 +280,15 @@
     return rows.map(function (r) {
       if (!r || typeof r !== "object") return { id: uid(), name: "", days: [false, false, false, false, false, false, false] };
       var days = Array.isArray(r.days) ? r.days : [];
+      var checks = Array.isArray(r.checks) ? r.checks : [];
       var d = [];
+      var c = [];
       var j;
       for (j = 0; j < 7; j++) {
         d.push(!!days[j]);
+        c.push(!!checks[j]);
       }
-      return { id: r.id || uid(), name: String(r.name || ""), days: d };
+      return { id: r.id || uid(), name: String(r.name || ""), days: d, checks: c };
     });
   }
 
@@ -438,6 +441,17 @@
             return { id: c.id || uid(), text: String(c.text || ""), done: false, recurring: true };
           });
       }
+
+      // Reset weekly chore-chart checkoffs
+      var chart = data.slides[2];
+      if (chart && chart.kind === "chores" && Array.isArray(chart.rows)) {
+        chart.rows = chart.rows.map(function (r) {
+          if (!r || typeof r !== "object") return r;
+          r.checks = [false, false, false, false, false, false, false];
+          return r;
+        });
+      }
+
       data.settings.lastWeekId = curWeek;
     }
 
