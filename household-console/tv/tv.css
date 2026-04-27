@@ -161,14 +161,39 @@ body.tv-body {
 }
 
 /* —— Master slide —— */
+.slide-master {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  grid-template-areas:
+    "heading heading"
+    "top top"
+    "schedule chores";
+  gap: clamp(0.35rem, 1.6vw, 0.85rem);
+  align-content: start;
+}
+
+.slide-master .slide-heading {
+  grid-area: heading;
+  margin: 0 0 0.25rem;
+}
+
 .slide-master .master-grid {
+  grid-area: top;
   display: grid;
   grid-template-columns: 1fr 1.2fr;
   gap: clamp(0.5rem, 2vw, 1rem);
-  margin-bottom: 0.65rem;
+  margin-bottom: 0;
 }
 
 @media (max-width: 700px) {
+  .slide-master {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "heading"
+      "top"
+      "schedule"
+      "chores";
+  }
   .slide-master .master-grid {
     grid-template-columns: 1fr;
   }
@@ -234,7 +259,9 @@ body.tv-body {
 }
 
 .master-schedule {
+  grid-area: schedule;
   margin-bottom: 0.5rem;
+  min-width: 0;
 }
 
 .schedule-day-block {
@@ -253,8 +280,8 @@ body.tv-body {
 .shopping-items {
   margin: 0;
   padding-left: 1.1rem;
-  font-size: clamp(0.78rem, 2.1vw, 1.05rem);
-  line-height: 1.35;
+  font-size: clamp(0.72rem, 1.85vw, 0.98rem);
+  line-height: 1.28;
 }
 
 .schedule-list li,
@@ -265,9 +292,11 @@ body.tv-body {
 }
 
 .master-chores {
+  grid-area: chores;
   background: rgba(96, 165, 250, 0.08);
   border-radius: 12px;
   padding: clamp(0.45rem, 1.5vw, 0.75rem);
+  min-width: 0;
 }
 
 .chore-item {
