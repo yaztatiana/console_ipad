@@ -710,6 +710,49 @@
     refreshSyncLine();
   }
 
+  function tryClipboardPasteIntoSyncKey() {
+    var inp = $("sync-key");
+    if (!inp) return;
+    if (navigator.clipboard && navigator.clipboard.readText) {
+      navigator.clipboard
+        .readText()
+        .then(function (t) {
+          var v = String(t || "").trim();
+          if (!v) {
+            showBanner("err", "Clipboard is empty.");
+            return;
+          }
+          inp.value = v;
+          showBanner("ok", "Pasted from clipboard. Click Save key.");
+        })
+        .catch(function () {
+          showBanner("err", "Clipboard paste blocked. Try typing, or use /manage/?key=YOUR_KEY on this device.");
+        });
+    } else {
+      showBanner("err", "Clipboard API not available. Use /manage/?key=YOUR_KEY on this device.");
+    }
+  }
+
+  function applyKeyFromUrlIfPresent() {
+    try {
+      var qs = new URLSearchParams(window.location.search || "");
+      var k = (qs.get("key") || qs.get("sync_key") || "").trim();
+      if (!k) return;
+      if (k.length < 8) {
+        showBanner("err", "URL key too short.");
+        return;
+      }
+      SYNC.setLocalSyncKey(k);
+      var inp = $("sync-key");
+      if (inp) inp.value = k;
+      showBanner("ok", "Sync key set from URL on this device.");
+      // Clean URL
+      try {
+        window.history.replaceState({}, document.title, window.location.pathname);
+      } catch (e) {}
+    } catch (e) {}
+  }
+
   function refreshSyncLine() {
     SYNC.ready().then(function (ok) {
       if (ok) setSyncStatus("Supabase config loaded. Push / pull use your saved sync key.");
@@ -800,6 +843,7 @@
     buildSlideFields();
     fillForm(DS.load());
     refreshSyncLine();
+    applyKeyFromUrlIfPresent();
     if (window.DashboardWeather && window.DashboardWeather.syncOnce) {
       window.DashboardWeather.syncOnce().then(function (ok) {
         if (ok) fillForm(DS.load());
@@ -809,10 +853,12 @@
     var form = $("dash-form");
     if (form) form.addEventListener("submit", onSaveDash);
     var bg = $("btn-gen-key");
+    var bpaste = $("btn-paste-key");
     var bk = $("btn-save-key");
     var bp = $("btn-push");
     var bl = $("btn-pull");
     if (bg) bg.addEventListener("click", onGenKey);
+    if (bpaste) bpaste.addEventListener("click", tryClipboardPasteIntoSyncKey);
     if (bk) bk.addEventListener("click", onSaveKey);
     if (bp) bp.addEventListener("click", onPush);
     if (bl) bl.addEventListener("click", onPull);
