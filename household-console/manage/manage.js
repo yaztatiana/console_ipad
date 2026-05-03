@@ -616,11 +616,28 @@
     c.rows = rows;
   }
 
+  function partitionShoppingPrev(prev) {
+    var prevBySlot = {};
+    var legacy = [];
+    var pi;
+    for (pi = 0; pi < prev.length; pi++) {
+      var p = prev[pi];
+      if (!p || typeof p !== "object") continue;
+      if (typeof p.slot === "number" && p.slot >= 0 && p.slot < N_LISTS) {
+        prevBySlot[p.slot] = p;
+      } else {
+        legacy.push(p);
+      }
+    }
+    return { prevBySlot: prevBySlot, legacy: legacy };
+  }
+
   function readShopping(data) {
     var s = data.slides[3];
     s.heading = ($("s-heading") && $("s-heading").value) || s.heading;
     s.amazonNote = ($("s-amazon") && $("s-amazon").value) || "";
     var prev = s.lists || [];
+    var part = partitionShoppingPrev(prev);
     var lists = [];
     var li;
     for (li = 0; li < N_LISTS; li++) {
@@ -629,7 +646,7 @@
       var name = nm ? nm.value.trim() : "";
       var parsed = parseShoppingLines(ta ? ta.value : "");
       if (!name && !parsed.length) continue;
-      var match = prev[lists.length];
+      var match = part.prevBySlot[li] || part.legacy[li];
       var lid = match && match.id ? match.id : uid();
       var prevItems = match && Array.isArray(match.items) ? match.items : [];
       var items = parsed.map(function (it, idx) {
@@ -637,7 +654,7 @@
         var iid = p && p.text === it.text && p.id ? p.id : uid();
         return { id: iid, text: it.text, checked: !!it.checked };
       });
-      lists.push({ id: lid, name: name || "List " + (li + 1), items: items });
+      lists.push({ id: lid, name: name || "List " + (li + 1), items: items, slot: li });
     }
     s.lists = lists;
   }
@@ -733,9 +750,18 @@
   function fillShopping(s) {
     if ($("s-heading")) $("s-heading").value = s.heading || "";
     if ($("s-amazon")) $("s-amazon").value = s.amazonNote || "";
+    var lists = s.lists || [];
+    var part = partitionShoppingPrev(lists);
+    var bySlot = part.prevBySlot;
+    var u = 0;
+    var leg = part.legacy;
     var li;
     for (li = 0; li < N_LISTS; li++) {
-      var L = s.lists[li];
+      if (!bySlot[li] && u < leg.length) {
+        bySlot[li] = leg[u];
+        u++;
+      }
+      var L = bySlot[li];
       var nm = $("s-list-" + li + "-name");
       var ta = $("s-list-" + li + "-lines");
       if (nm) nm.value = L ? L.name || "" : "";

@@ -236,9 +236,17 @@
       root.appendChild(note);
     }
     var lists = el("div", "shopping-lists");
+    var raw = s.lists || [];
     var i;
-    for (i = 0; i < s.lists.length; i++) {
-      var L = s.lists[i];
+    var shown = 0;
+    for (i = 0; i < raw.length; i++) {
+      var L = raw[i];
+      if (!L || typeof L !== "object") continue;
+      var hasName = String(L.name || "").trim();
+      var hasItems = Array.isArray(L.items) && L.items.length;
+      if (!hasName && !hasItems) continue;
+      shown++;
+      var listId = String(L.id || "");
       var box = el("div", "shopping-list");
       box.appendChild(el("div", "shopping-list-name", L.name || "List"));
       var ul = el("ul", "shopping-items");
@@ -248,7 +256,7 @@
         var li = el("li", "shopping-item" + (it.checked ? " is-checked" : ""), (it.checked ? "[x] " : "[ ] ") + (it.text || ""));
         li.setAttribute("role", "button");
         li.setAttribute("tabindex", "0");
-        li.setAttribute("data-shop-list-idx", String(i));
+        li.setAttribute("data-shop-list-id", listId);
         li.setAttribute("data-shop-item-id", String(it.id || ""));
         ul.appendChild(li);
       }
@@ -256,7 +264,7 @@
       box.appendChild(ul);
       lists.appendChild(box);
     }
-    if (!s.lists.length) lists.appendChild(el("p", "muted center-msg", "Add lists in Manage."));
+    if (!shown) lists.appendChild(el("p", "muted center-msg", "Add lists in Manage."));
     root.appendChild(lists);
   }
 
@@ -313,25 +321,30 @@
     }
   }
 
-  function toggleShoppingItem(listIdx, itemId) {
-    if (listIdx == null || itemId == null) return;
-    var li = parseInt(String(listIdx), 10);
-    if (li !== li || li < 0 || li > 99) return;
+  function toggleShoppingItem(listId, itemId) {
+    if (listId == null || itemId == null) return;
+    var lid = String(listId || "");
     var id = String(itemId || "");
-    if (!id) return;
+    if (!lid || !id) return;
     var data = DS.load();
     var s = data.slides[3];
-    if (!s || s.kind !== "shopping" || !Array.isArray(s.lists) || !s.lists[li]) return;
-    var items = s.lists[li].items || [];
-    var i;
-    for (i = 0; i < items.length; i++) {
-      if (items[i].id === id) {
-        items[i].checked = !items[i].checked;
-        DS.save(data);
-        renderSlideContent();
-        maybePushToCloud();
-        return;
+    if (!s || s.kind !== "shopping" || !Array.isArray(s.lists)) return;
+    var li;
+    for (li = 0; li < s.lists.length; li++) {
+      var L = s.lists[li];
+      if (!L || String(L.id || "") !== lid) continue;
+      var items = L.items || [];
+      var i;
+      for (i = 0; i < items.length; i++) {
+        if (items[i].id === id) {
+          items[i].checked = !items[i].checked;
+          DS.save(data);
+          renderSlideContent();
+          maybePushToCloud();
+          return;
+        }
       }
+      return;
     }
   }
 
@@ -420,7 +433,7 @@
         return;
       }
       if (t && t.getAttribute && t.getAttribute("data-shop-item-id")) {
-        toggleShoppingItem(t.getAttribute("data-shop-list-idx"), t.getAttribute("data-shop-item-id"));
+        toggleShoppingItem(t.getAttribute("data-shop-list-id"), t.getAttribute("data-shop-item-id"));
         return;
       }
       if (t && t.getAttribute && t.getAttribute("data-chart-row-id")) {
@@ -443,7 +456,7 @@
       }
       if (t && t.getAttribute && t.getAttribute("data-shop-item-id")) {
         e.preventDefault();
-        toggleShoppingItem(t.getAttribute("data-shop-list-idx"), t.getAttribute("data-shop-item-id"));
+        toggleShoppingItem(t.getAttribute("data-shop-list-id"), t.getAttribute("data-shop-item-id"));
         return;
       }
       if (t && t.getAttribute && t.getAttribute("data-chart-row-id")) {

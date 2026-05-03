@@ -205,6 +205,7 @@
         {
           id: uid(),
           name: "Groceries",
+          slot: 0,
           items: [
             { id: uid(), text: "Milk", checked: false },
             { id: uid(), text: "Bread", checked: false },
@@ -213,6 +214,7 @@
         {
           id: uid(),
           name: "Home",
+          slot: 1,
           items: [{ id: uid(), text: "Light bulbs", checked: false }],
         },
       ],
@@ -405,11 +407,14 @@
     if (!Array.isArray(lists)) return [];
     return lists.map(function (L) {
       if (!L || typeof L !== "object") return { id: uid(), name: "", items: [] };
-      return {
+      var slot = Number(L.slot);
+      var out = {
         id: L.id || uid(),
         name: String(L.name || ""),
         items: normalizeListItems(L.items),
       };
+      if (slot === slot && slot >= 0 && slot <= 3) out.slot = slot;
+      return out;
     });
   }
 
