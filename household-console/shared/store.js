@@ -30,8 +30,71 @@
   function copyScheduleItems(items) {
     if (!Array.isArray(items)) return [];
     return items.map(function (it) {
-      return { time: String((it && it.time) || ""), text: String((it && it.text) || "") };
+      if (!it || typeof it !== "object") return { time: "", text: "", recurring: true };
+      return {
+        time: String(it.time || ""),
+        text: String(it.text || ""),
+        recurring: it.recurring !== false,
+      };
     });
+  }
+
+  function syncChoresTodayFromChart(data) {
+    var master = data && data.slides && data.slides[0];
+    var chart = data && data.slides && data.slides[2];
+    if (!master || master.kind !== "master") return;
+    var tz = data.settings && data.settings.timeZone ? data.settings.timeZone : "";
+    var wi = weeklyIndexForDateInTimeZone(new Date(), tz);
+    var prevById = {};
+    if (Array.isArray(master.choresToday)) {
+      var pi;
+      for (pi = 0; pi < master.choresToday.length; pi++) {
+        var pc = master.choresToday[pi];
+        if (pc && pc.id) prevById[pc.id] = pc;
+      }
+    }
+    var out = [];
+    if (chart && chart.kind === "chores" && Array.isArray(chart.rows)) {
+      var ri;
+      for (ri = 0; ri < chart.rows.length; ri++) {
+        var row = chart.rows[ri];
+        if (!row || !row.days || !row.days[wi]) continue;
+        var name = String(row.name || "").trim();
+        if (!name) continue;
+        var rid = String(row.id || "");
+        if (!rid) continue;
+        var id = "chart:" + rid;
+        var prev = prevById[id];
+        out.push({
+          id: id,
+          text: name,
+          done: !!(prev && prev.done),
+          recurring: true,
+          source: "chart",
+        });
+      }
+    }
+    var oneOffs = Array.isArray(master.oneOffTasks) ? master.oneOffTasks : [];
+    var oi;
+    for (oi = 0; oi < oneOffs.length; oi++) {
+      var t = oneOffs[oi];
+      if (!t || typeof t !== "object") continue;
+      var dow = Number(t.dow);
+      if (dow !== dow || dow < 0 || dow > 6) continue;
+      if (dow !== wi) continue;
+      var oid = String(t.id || "");
+      if (!oid) oid = uid();
+      var p2 = prevById[oid];
+      out.push({
+        id: oid,
+        text: String(t.text || ""),
+        done: !!(p2 ? p2.done : t.done),
+        recurring: false,
+        source: "oneoff",
+        dow: dow,
+      });
+    }
+    master.choresToday = out;
   }
 
   // Returns index into WEEKDAYS (Mon=0..Sun=6) for the given date in the provided timezone.
@@ -100,10 +163,8 @@
         blankScheduleDay("Tomorrow"),
         blankScheduleDay("Day after"),
       ],
-      choresToday: [
-        { id: uid(), text: "Example chore", done: false, recurring: true },
-        { id: uid(), text: "One-off task", done: true, recurring: false },
-      ],
+      choresToday: [],
+      oneOffTasks: [],
     };
   }
 
@@ -192,8 +253,12 @@
   function normalizeScheduleItems(items) {
     if (!Array.isArray(items)) return [];
     return items.map(function (it) {
-      if (!it || typeof it !== "object") return { time: "", text: "" };
-      return { time: String(it.time || ""), text: String(it.text || "") };
+      if (!it || typeof it !== "object") return { time: "", text: "", recurring: true };
+      return {
+        time: String(it.time || ""),
+        text: String(it.text || ""),
+        recurring: it.recurring !== false,
+      };
     });
   }
 
@@ -215,16 +280,34 @@
     return out;
   }
 
+  function normalizeOneOffTasks(arr) {
+    if (!Array.isArray(arr)) return [];
+    return arr.map(function (t) {
+      if (!t || typeof t !== "object") return { id: uid(), text: "", done: false, dow: 0 };
+      var dow = Number(t.dow);
+      if (dow !== dow || dow < 0 || dow > 6) dow = 0;
+      return {
+        id: t.id || uid(),
+        text: String(t.text || ""),
+        done: !!t.done,
+        dow: dow,
+      };
+    });
+  }
+
   function normalizeChoresToday(arr) {
     if (!Array.isArray(arr)) return [];
     return arr.map(function (c) {
-      if (!c || typeof c !== "object") return { id: uid(), text: "", done: false };
-      return {
+      if (!c || typeof c !== "object") return { id: uid(), text: "", done: false, recurring: true };
+      var o = {
         id: c.id || uid(),
         text: String(c.text || ""),
         done: !!c.done,
-        recurring: !!c.recurring,
+        recurring: c.recurring !== false,
       };
+      if (c.source) o.source = String(c.source);
+      if (typeof c.dow === "number" && c.dow >= 0 && c.dow <= 6) o.dow = c.dow;
+      return o;
     });
   }
 
@@ -243,6 +326,7 @@
       forecast: normalizeForecast(base.forecast),
       scheduleThreeDay: normalizeScheduleThreeDay(base.scheduleThreeDay),
       choresToday: normalizeChoresToday(base.choresToday),
+      oneOffTasks: normalizeOneOffTasks(base.oneOffTasks),
     };
   }
 
@@ -433,20 +517,30 @@
     // Slide 1 "Next 3 days" schedule is derived from the weekly schedule (slide 2).
     deriveThreeDayScheduleFromWeekly(data);
 
-    // Weekly rollover for "today chores": keep recurring, reset done, drop one-offs.
     if (data.settings.lastWeekId !== curWeek) {
-      var m = data.slides[0];
-      if (m && m.kind === "master" && Array.isArray(m.choresToday)) {
-        m.choresToday = m.choresToday
-          .filter(function (c) {
-            return c && c.recurring && String(c.text || "").trim();
-          })
-          .map(function (c) {
-            return { id: c.id || uid(), text: String(c.text || ""), done: false, recurring: true };
+      var weeklyRoll = data.slides[1];
+      if (weeklyRoll && weeklyRoll.kind === "weekly" && Array.isArray(weeklyRoll.days)) {
+        var di;
+        for (di = 0; di < weeklyRoll.days.length; di++) {
+          var day = weeklyRoll.days[di];
+          if (!day || !Array.isArray(day.items)) continue;
+          day.items = day.items.filter(function (it) {
+            return it && it.recurring !== false;
           });
+        }
       }
 
-      // Reset weekly chore-chart checkoffs
+      var mRoll = data.slides[0];
+      if (mRoll && mRoll.kind === "master") {
+        mRoll.choresToday = [];
+        if (Array.isArray(mRoll.oneOffTasks)) {
+          var oi;
+          for (oi = 0; oi < mRoll.oneOffTasks.length; oi++) {
+            if (mRoll.oneOffTasks[oi]) mRoll.oneOffTasks[oi].done = false;
+          }
+        }
+      }
+
       var chart = data.slides[2];
       if (chart && chart.kind === "chores" && Array.isArray(chart.rows)) {
         chart.rows = chart.rows.map(function (r) {
@@ -458,6 +552,9 @@
 
       data.settings.lastWeekId = curWeek;
     }
+
+    // Merge weekly chore chart + one-off tasks → Slide 1 "today" list (TV toggle state preserved via ids).
+    syncChoresTodayFromChart(data);
 
     // Sunday-week rollover for Shopping: clear checked items in Groceries + Home lists.
     if (data.settings.lastSundayWeekId !== curSunWeek) {

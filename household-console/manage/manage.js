@@ -4,7 +4,6 @@
   var DS = window.DashboardStore;
   var SYNC = window.DashboardSync;
   var WD = DS.WEEKDAYS;
-  var N_CHORE_TODAY = 12;
   var N_CHART_ROWS = 16;
   var N_LISTS = 4;
 
@@ -38,11 +37,13 @@
       })
       .filter(Boolean)
       .map(function (line) {
+        var once = /\s+\[once\]$/i.test(line);
+        if (once) line = line.replace(/\s+\[once\]$/i, "").trim();
         var m = line.match(/^(\d{1,2}:\d{2})\s*[-–—·:]\s*(.+)$/);
-        if (m) return { time: m[1], text: m[2].trim() };
+        if (m) return { time: m[1], text: m[2].trim(), recurring: !once };
         m = line.match(/^(\d{1,2}:\d{2})\s+(.+)$/);
-        if (m) return { time: m[1], text: m[2].trim() };
-        return { time: "", text: line };
+        if (m) return { time: m[1], text: m[2].trim(), recurring: !once };
+        return { time: "", text: line, recurring: !once };
       });
   }
 
@@ -50,8 +51,70 @@
     if (!items || !items.length) return "";
     return items
       .map(function (it) {
-        if (it.time) return it.time + " — " + (it.text || "");
-        return it.text || "";
+        var tail = it.recurring === false ? " [once]" : "";
+        if (it.time) return it.time + " — " + (it.text || "") + tail;
+        return (it.text || "") + tail;
+      })
+      .join("\n");
+  }
+
+  function dowFromPrefix(word) {
+    var w = String(word || "").trim();
+    if (!w) return -1;
+    var lower = w.toLowerCase();
+    var abbrevs = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+    var ai = abbrevs.indexOf(lower.slice(0, 3));
+    if (ai >= 0) return ai;
+    var full = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
+    var i;
+    for (i = 0; i < full.length; i++) {
+      if (full[i].indexOf(lower) === 0) return i;
+    }
+    return WD.indexOf(w);
+  }
+
+  function parseOneOffLines(text, prevTasks) {
+    var prevByKey = {};
+    if (prevTasks && prevTasks.length) {
+      var pi;
+      for (pi = 0; pi < prevTasks.length; pi++) {
+        var p = prevTasks[pi];
+        if (p && String(p.text || "").trim()) {
+          prevByKey[String(p.dow) + "\n" + String(p.text || "").trim().toLowerCase()] = p;
+        }
+      }
+    }
+    return String(text || "")
+      .split(/\r?\n/)
+      .map(function (l) {
+        return l.trim();
+      })
+      .filter(Boolean)
+      .map(function (line) {
+        var m = line.match(/^([A-Za-z]{3,})\s*[·.\-:]\s*(.+)$/);
+        if (!m) return null;
+        var dow = dowFromPrefix(m[1]);
+        if (dow < 0) return null;
+        var tx = String(m[2] || "").trim();
+        if (!tx) return null;
+        var key = String(dow) + "\n" + tx.toLowerCase();
+        var prev = prevByKey[key];
+        return {
+          id: prev && prev.id ? prev.id : uid(),
+          text: tx,
+          done: !!(prev && prev.done),
+          dow: dow,
+        };
+      })
+      .filter(Boolean);
+  }
+
+  function formatOneOffTasks(tasks) {
+    if (!tasks || !tasks.length) return "";
+    return tasks
+      .map(function (t) {
+        var d = typeof t.dow === "number" && t.dow >= 0 && t.dow <= 6 ? t.dow : 0;
+        return WD[d] + " · " + (t.text || "");
       })
       .join("\n");
   }
@@ -207,11 +270,12 @@
       var sd = startOfDay(ev.start);
       var item;
       if (ev.allDay) {
-        item = { time: "", text: ev.summary };
+        item = { time: "", text: ev.summary, recurring: true };
       } else {
         item = {
           time: pad2(ev.start.getHours()) + ":" + pad2(ev.start.getMinutes()),
           text: ev.summary,
+          recurring: true,
         };
       }
       if (opts.master) {
@@ -310,6 +374,20 @@
     showBanner("ok", "Added to list " + (slot + 1) + " — click Save dashboard when done.");
   }
 
+  function weeklyIndexNow() {
+    var pack = DS.load();
+    var tz = pack.settings && pack.settings.timeZone ? pack.settings.timeZone : "";
+    var d = new Date();
+    var wk;
+    try {
+      wk = d.toLocaleDateString("en-US", { weekday: "short", timeZone: tz || undefined });
+    } catch (e) {
+      wk = d.toLocaleDateString("en-US", { weekday: "short" });
+    }
+    var wi = WD.indexOf(wk);
+    return wi >= 0 ? wi : 0;
+  }
+
   function addChoreTodayToFirstSlot() {
     var inp = $("qa-chore-today-text");
     var text = inp ? inp.value.trim() : "";
@@ -317,19 +395,16 @@
       showBanner("err", "Enter a chore name.");
       return;
     }
-    var ci;
-    for (ci = 0; ci < N_CHORE_TODAY; ci++) {
-      var tx = $("m-chore-" + ci + "-text");
-      if (tx && !String(tx.value || "").trim()) {
-        tx.value = text;
-        var ch = $("m-chore-" + ci + "-done");
-        if (ch) ch.checked = false;
-        if (inp) inp.value = "";
-        showBanner("ok", "Added to today’s chores — Save dashboard when done.");
-        return;
-      }
+    var ta = $("one-off-tasks");
+    if (!ta) {
+      showBanner("err", "Open Slide 1 fields (reload Manage if needed).");
+      return;
     }
-    showBanner("err", "Today’s chore list is full in the form below. Remove one or edit there.");
+    var line = WD[weeklyIndexNow()] + " · " + text;
+    var cur = String(ta.value || "").replace(/\s+$/, "");
+    ta.value = cur ? cur + "\n" + line : line;
+    if (inp) inp.value = "";
+    showBanner("ok", "Added one-off line for today — Save dashboard when done.");
   }
 
   function addWeeklyChoreFromHub() {
@@ -408,29 +483,19 @@
       '<div class="subsection slide1-col"><h4>Next 3 days — schedule</h4><p class="manage-help tight">This view is auto-generated from <strong>Slide 2 — Weekly schedule</strong>.</p></div>';
 
     html +=
-      '<div class="subsection slide1-col"><h4>Today’s chores</h4><p class="manage-help tight">If <strong>Recurring</strong> is checked, the chore resets at the start of the week. If not, it drops off next week.</p><div class="chore-today-grid">';
-    var ci;
-    for (ci = 0; ci < N_CHORE_TODAY; ci++) {
-      html +=
-        '<div class="chore-today-row">' +
-        '<input class="manage-input" id="m-chore-' +
-        ci +
-        '-text" type="text" placeholder="Chore ' +
-        (ci + 1) +
-        '" />' +
-        '<label class="chk"><input type="checkbox" id="m-chore-' +
-        ci +
-        '-done" /> Done</label>' +
-        '<label class="chk"><input type="checkbox" id="m-chore-' +
-        ci +
-        '-rec" /> Recurring</label></div>';
-    }
-    html += "</div></div></div></div>";
+      '<div class="subsection slide1-col"><h4>Today’s chores</h4>' +
+      '<p class="manage-help tight">Recurring chores are filled from <strong>Slide 3 — Weekly chore chart</strong> for whichever weekdays are checked (today’s weekday appears on TV automatically).</p>' +
+      '<p class="manage-help tight" id="chore-auto-preview" aria-live="polite"></p>' +
+      '<div class="manage-row" style="align-items:flex-start"><label class="manage-label" for="one-off-tasks">One-off tasks (by weekday)</label>' +
+      '<textarea class="manage-input" id="one-off-tasks" rows="7" placeholder="Mon · Pick up parcel&#10;Thu · Trash night"></textarea></div>' +
+      '<p class="manage-help tight">One line per task: <code>Mon · …</code> through <code>Sun · …</code>. These show only on that day (not weekly recurring).</p></div>' +
+      "</div></div>";
 
     html +=
       '<div class="slide-card">' +
       "<h3>Slide 2 — Weekly schedule</h3>" +
-      '<div class="manage-row"><label class="manage-label" for="w-heading">Heading</label><input class="manage-input" id="w-heading" type="text" /></div>';
+      '<div class="manage-row"><label class="manage-label" for="w-heading">Heading</label><input class="manage-input" id="w-heading" type="text" /></div>' +
+      '<p class="manage-help tight">End a line with <code>[once]</code> for a one-week-only event (removed on the next Monday rollover).</p>';
     var wi;
     for (wi = 0; wi < 7; wi++) {
       html +=
@@ -514,20 +579,8 @@
       };
     }
     // Next-3-day schedule is derived from the weekly schedule (slide 2).
-    var prevList = m.choresToday || [];
-    var chores = [];
-    var ci;
-    for (ci = 0; ci < N_CHORE_TODAY; ci++) {
-      var tx = $("m-chore-" + ci + "-text");
-      var ch = $("m-chore-" + ci + "-done");
-      var rc = $("m-chore-" + ci + "-rec");
-      var text = tx ? tx.value.trim() : "";
-      if (!text) continue;
-      var match = prevList[chores.length];
-      var cid = match && match.text === text && match.id ? match.id : uid();
-      chores.push({ id: cid, text: text, done: !!(ch && ch.checked), recurring: !!(rc && rc.checked) });
-    }
-    m.choresToday = chores;
+    var taOff = $("one-off-tasks");
+    m.oneOffTasks = parseOneOffLines(taOff ? taOff.value : "", m.oneOffTasks || []);
   }
 
   function readWeekly(data) {
@@ -593,7 +646,7 @@
     var data = DS.load();
     data.settings.title = ($("setting-title") && $("setting-title").value) || data.settings.title;
     var th = $("setting-theme");
-    if (th) data.settings.themeId = String(th.value || data.settings.themeId || "neon-kiosk");
+    if (th) data.settings.themeId = String(th.value || data.settings.themeId || "pastel-prism");
     data.settings.bannerMessage = ($("setting-banner") && $("setting-banner").value) || data.settings.bannerMessage || "";
     data.settings.zip = ($("setting-zip") && $("setting-zip").value) || data.settings.zip || "84010";
     data.settings.timeZone = ($("setting-timezone") && $("setting-timezone").value) || data.settings.timeZone || "America/Denver";
@@ -620,16 +673,35 @@
       if ($("m-fc-" + fi + "-lo")) $("m-fc-" + fi + "-lo").value = f.low || "";
       if ($("m-fc-" + fi + "-cond")) $("m-fc-" + fi + "-cond").value = f.condition || "";
     }
-    // Next-3-day schedule is derived from the weekly schedule (slide 2).
-    var ci;
-    for (ci = 0; ci < N_CHORE_TODAY; ci++) {
-      var tx = $("m-chore-" + ci + "-text");
-      var ch = $("m-chore-" + ci + "-done");
-      var rc = $("m-chore-" + ci + "-rec");
-      var c = m.choresToday[ci];
-      if (tx) tx.value = c ? c.text || "" : "";
-      if (ch) ch.checked = !!(c && c.done);
-      if (rc) rc.checked = !!(c && c.recurring);
+    var taOne = $("one-off-tasks");
+    if (taOne) taOne.value = formatOneOffTasks(m.oneOffTasks || []);
+    var pv = $("chore-auto-preview");
+    if (pv) {
+      var pack = DS.load();
+      var chart = pack.slides[2];
+      var tz = pack.settings.timeZone || "";
+      var d = new Date();
+      var wk;
+      try {
+        wk = d.toLocaleDateString("en-US", { weekday: "short", timeZone: tz || undefined });
+      } catch (e) {
+        wk = d.toLocaleDateString("en-US", { weekday: "short" });
+      }
+      var wi = WD.indexOf(wk);
+      if (wi < 0) wi = 0;
+      var names = [];
+      if (chart && chart.rows) {
+        var ri;
+        for (ri = 0; ri < chart.rows.length; ri++) {
+          var row = chart.rows[ri];
+          if (row && row.days && row.days[wi] && String(row.name || "").trim()) {
+            names.push(String(row.name).trim());
+          }
+        }
+      }
+      pv.textContent = names.length
+        ? "From chore chart for " + WD[wi] + ": " + names.join("; ")
+        : "No chore chart rows marked for " + WD[wi] + " yet.";
     }
   }
 

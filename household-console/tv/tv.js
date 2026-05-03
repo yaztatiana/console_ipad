@@ -287,12 +287,24 @@
 
   function toggleChoreById(choreId) {
     if (!choreId) return;
+    var idStr = String(choreId);
     var data = DS.load();
     var m = data.slides[0];
     var i;
     for (i = 0; i < m.choresToday.length; i++) {
       if (m.choresToday[i].id === choreId) {
-        m.choresToday[i].done = !m.choresToday[i].done;
+        var next = !m.choresToday[i].done;
+        m.choresToday[i].done = next;
+        if (idStr.indexOf("chart:") !== 0 && Array.isArray(m.oneOffTasks)) {
+          var j;
+          for (j = 0; j < m.oneOffTasks.length; j++) {
+            var ot = m.oneOffTasks[j];
+            if (ot && ot.id === choreId) {
+              ot.done = next;
+              break;
+            }
+          }
+        }
         DS.save(data);
         renderSlideContent();
         maybePushToCloud();

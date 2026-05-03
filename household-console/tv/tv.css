@@ -41,7 +41,7 @@ body.tv-body {
   align-items: center;
   white-space: nowrap;
   will-change: transform;
-  animation: tv-marquee 22s linear infinite;
+  animation: tv-marquee 27.5s linear infinite;
 }
 
 .tv-banner-text {

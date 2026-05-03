@@ -1,5 +1,7 @@
 /* Brand theming layer (start: Pastel Prism) */
 
+@import url("https://fonts.googleapis.com/css2?family=Bungee&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Sniglet:wght@400;800&display=swap");
+
 .theme {
   --bg0: #0b0d12;
   --bg1: #0b0d12;
@@ -29,11 +31,14 @@
   --accent2: #7c5cff;
   --gold: rgba(232, 190, 92, 0.95);
   --ink: rgba(34, 24, 48, 0.90);
+  --font-display: "Sniglet", system-ui, sans-serif;
+  --font-body: "Sniglet", system-ui, sans-serif;
 }
 
 .theme.theme-pastel-prism.tv-body,
 .theme.theme-pastel-prism.manage-body {
   color: var(--text);
+  font-family: var(--font-body);
   background:
     radial-gradient(1200px 700px at 12% 18%, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0) 62%),
     radial-gradient(900px 650px at 82% 78%, rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0) 55%),
@@ -51,7 +56,10 @@
 }
 
 .theme.theme-pastel-prism .tv-title,
-.theme.theme-pastel-prism .manage-h1 {
+.theme.theme-pastel-prism .manage-h1,
+.theme.theme-pastel-prism .slide-heading,
+.theme.theme-pastel-prism .kiosk-tab {
+  font-family: var(--font-display);
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.65);
 }
 
@@ -225,14 +233,24 @@
   --accent2: #ff2bd6;
   --gold: rgba(255, 205, 85, 0.95);
   --ink: rgba(244, 245, 255, 0.95);
+  --font-display: "Bungee", system-ui, sans-serif;
+  --font-body: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --nk-frame: rgba(0, 245, 255, 0.55);
+  --nk-frame-soft: rgba(125, 240, 255, 0.22);
+  --nk-frame-dim: rgba(0, 245, 255, 0.18);
+  --nk-frame-ink: rgba(10, 6, 18, 0.68);
 }
 
 /* ————————— Academia Ledger (stub) ————————— */
 .theme.theme-academia-ledger {
   --bg0: #0b0a08;
   --bg1: #15110d;
+  /* Cream on dark wood (header / chrome) */
   --text: rgba(244, 233, 214, 0.93);
   --muted: rgba(244, 233, 214, 0.68);
+  /* Ink on paper panels (lists, forms, slide chrome) */
+  --paper-ink: rgba(52, 34, 22, 0.94);
+  --paper-ink-muted: rgba(72, 50, 34, 0.78);
   --line: rgba(189, 160, 120, 0.22);
   --panel: rgba(244, 233, 214, 0.92);
   --panel2: rgba(244, 233, 214, 0.84);
@@ -240,7 +258,7 @@
   --accent: #c7a46b; /* brass */
   --accent2: #7e5a3b; /* leather */
   --gold: rgba(211, 176, 112, 0.95);
-  --ink: rgba(30, 22, 16, 0.92);
+  --ink: rgba(42, 28, 18, 0.94);
   --paper: rgba(244, 233, 214, 0.94);
   --paper-edge: rgba(214, 190, 154, 0.55);
   --paper-rule: rgba(128, 98, 68, 0.20);
@@ -249,11 +267,14 @@
   --leather0: rgba(62, 38, 26, 0.92);
   --leather1: rgba(36, 22, 16, 0.92);
   --ink2: rgba(92, 63, 41, 0.75);
+  --font-display: "Cormorant Garamond", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  --font-body: "Cormorant Garamond", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
 }
 
 .theme.theme-academia-ledger.tv-body,
 .theme.theme-academia-ledger.manage-body {
   color: var(--text);
+  font-family: var(--font-body);
   background:
     /* bookshelf shadow + vignette */
     radial-gradient(900px 620px at 18% 22%, rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0) 60%),
@@ -298,19 +319,32 @@
 .theme.theme-academia-ledger .tv-title,
 .theme.theme-academia-ledger .manage-h1,
 .theme.theme-academia-ledger .kiosk-label {
+  font-family: var(--font-display);
   color: rgba(255, 246, 229, 0.92);
   text-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
 }
 
 .theme.theme-academia-ledger .slide-heading {
-  color: rgba(255, 246, 229, 0.95);
+  font-family: var(--font-display);
+  color: var(--paper-ink);
   letter-spacing: 0.02em;
-  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
+  text-shadow: none;
 }
 
 .theme.theme-academia-ledger .block-title {
-  color: rgba(92, 63, 41, 0.72);
+  font-family: var(--font-display);
+  color: var(--paper-ink-muted);
   letter-spacing: 0.10em;
+}
+
+/* TV: default slide chrome colors are tuned for dark themes */
+.theme.theme-academia-ledger .slide {
+  color: var(--paper-ink);
+}
+
+.theme.theme-academia-ledger .muted {
+  color: var(--paper-ink-muted);
+  opacity: 0.85;
 }
 
 /* Paper cards on a desk */
@@ -439,10 +473,101 @@
 
 .theme.theme-academia-ledger .manage-help,
 .theme.theme-academia-ledger .manage-status,
+.theme.theme-academia-ledger .manage-hint {
+  color: var(--paper-ink-muted);
+}
+
+.theme.theme-academia-ledger .tv-hint {
+  color: rgba(244, 233, 214, 0.72);
+}
+
+.theme.theme-academia-ledger .hub-block .manage-help,
+.theme.theme-academia-ledger .hub-block .manage-hint,
+.theme.theme-academia-ledger .kiosk-panel .manage-help,
+.theme.theme-academia-ledger .kiosk-panel .manage-hint,
+.theme.theme-academia-ledger .slide-card .manage-help,
+.theme.theme-academia-ledger .slide-card .manage-hint {
+  color: rgba(72, 50, 34, 0.82);
+}
+
+.theme.theme-academia-ledger .kiosk-stage .manage-section h2,
+.theme.theme-academia-ledger .kiosk-panel .manage-section h2,
+.theme.theme-academia-ledger .hub-block .hub-h3,
+.theme.theme-academia-ledger .kiosk-panel .hub-h3,
+.theme.theme-academia-ledger .slide-card .subsection h4 {
+  color: var(--paper-ink);
+}
+
+.theme.theme-academia-ledger .forecast-edit-label {
+  color: rgba(72, 50, 34, 0.62);
+}
+
+/* TV + Manage: neutralize “dark theme” grays that read as low-contrast on paper */
+.theme.theme-academia-ledger .master-weather-label,
+.theme.theme-academia-ledger .weekly-col-head {
+  color: rgba(72, 50, 34, 0.62);
+  border-bottom-color: rgba(92, 63, 41, 0.14);
+}
+
+.theme.theme-academia-ledger .weekly-items {
+  color: rgba(52, 34, 22, 0.88);
+}
+
+.theme.theme-academia-ledger .chore-head .chore-cell {
+  background: rgba(92, 63, 41, 0.10);
+  color: rgba(52, 34, 22, 0.88);
+}
+
+.theme.theme-academia-ledger .chore-cell {
+  background: rgba(92, 63, 41, 0.06);
+  color: rgba(52, 34, 22, 0.86);
+}
+
+.theme.theme-academia-ledger .forecast-row {
+  border-bottom-color: rgba(92, 63, 41, 0.14);
+}
+
+.theme.theme-academia-ledger .forecast-hi-lo,
+.theme.theme-academia-ledger .forecast-cond {
+  color: rgba(72, 50, 34, 0.78);
+}
+
+.theme.theme-academia-ledger .chore-chip {
+  border-color: rgba(92, 63, 41, 0.22);
+  color: rgba(52, 34, 22, 0.78);
+}
+
+.theme.theme-academia-ledger .chore-chip.is-on {
+  border-color: rgba(52, 120, 62, 0.45);
+  color: rgba(24, 64, 30, 0.92);
+}
+
+.theme.theme-academia-ledger .manage-label,
 .theme.theme-academia-ledger .manage-hint,
-.theme.theme-academia-ledger .tv-hint,
-.theme.theme-academia-ledger .muted {
-  color: rgba(255, 246, 229, 0.70);
+.theme.theme-academia-ledger .manage-status {
+  color: rgba(72, 50, 34, 0.82);
+}
+
+.theme.theme-academia-ledger .subsection {
+  border-top-color: rgba(92, 63, 41, 0.12);
+}
+
+.theme.theme-academia-ledger .slide-card h3 {
+  color: var(--paper-ink);
+}
+
+.theme.theme-academia-ledger .chore-mark.is-due:not(.is-on) {
+  background: rgba(199, 164, 107, 0.22);
+  color: rgba(52, 34, 22, 0.82);
+}
+
+.theme.theme-academia-ledger .chore-mark.is-on {
+  background: rgba(52, 120, 62, 0.22);
+  color: rgba(24, 64, 30, 0.92);
+}
+
+.theme.theme-academia-ledger .shopping-list-name {
+  border-bottom-color: rgba(92, 63, 41, 0.14);
 }
 
 .theme.theme-academia-ledger .tv-banner {
@@ -468,6 +593,7 @@
 .theme.theme-neon-kiosk.tv-body,
 .theme.theme-neon-kiosk.manage-body {
   color: var(--text);
+  font-family: var(--font-body);
   background:
     radial-gradient(1100px 700px at 12% 18%, rgba(0, 245, 255, 0.14), rgba(0, 245, 255, 0) 62%),
     radial-gradient(900px 650px at 82% 78%, rgba(255, 43, 214, 0.13), rgba(255, 43, 214, 0) 55%),
@@ -496,7 +622,11 @@
 }
 
 .theme.theme-neon-kiosk .tv-title,
-.theme.theme-neon-kiosk .manage-h1 {
+.theme.theme-neon-kiosk .manage-h1,
+.theme.theme-neon-kiosk .slide-heading,
+.theme.theme-neon-kiosk .kiosk-tab,
+.theme.theme-neon-kiosk .block-title {
+  font-family: var(--font-display);
   text-shadow: 0 0 14px rgba(0, 245, 255, 0.22), 0 0 22px rgba(255, 43, 214, 0.18);
 }
 
@@ -561,13 +691,6 @@
 }
 
 /* Neon Kiosk — frame system (sci‑fi cyan panels) */
-.theme.theme-neon-kiosk {
-  --nk-frame: rgba(0, 245, 255, 0.55);
-  --nk-frame-soft: rgba(125, 240, 255, 0.22);
-  --nk-frame-dim: rgba(0, 245, 255, 0.18);
-  --nk-frame-ink: rgba(10, 6, 18, 0.68);
-}
-
 .theme.theme-neon-kiosk .hub-block,
 .theme.theme-neon-kiosk .kiosk-panel,
 .theme.theme-neon-kiosk .slide-card,
